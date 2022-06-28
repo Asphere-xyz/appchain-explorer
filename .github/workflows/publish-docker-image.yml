@@ -31,4 +31,4 @@ jobs:
         with:
           file: "./docker/Dockerfile"
           push: true
-          tags: harbor.stkr.io/library/blockscout-explorer:${{ github.head_ref }}
+          tags: harbor.stkr.io/library/blockscout-explorer:devel
