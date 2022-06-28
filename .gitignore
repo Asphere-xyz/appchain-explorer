@@ -1,0 +1,8 @@
+.idea
+datadir
+tmp
+3dparty
+charts/requirements.lock
+charts/charts/
+certs/prod/
+.vscode

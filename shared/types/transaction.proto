@@ -1,0 +1,35 @@
+syntax = "proto3";
+
+option java_package = "com.ankr.proto";
+option java_outer_classname = "BlockProto";
+
+option go_package = "./shared/types;types";
+
+package com.ankr;
+
+enum TransactionStatus {
+  REVERTED = 0;
+  SUCCESS = 1;
+}
+
+message Transaction {
+  bytes tx_hash = 1;
+  TransactionStatus status = 2;
+  uint64 gas = 3;
+  uint64 cumulative_gas_used = 4;
+  uint64 gas_used = 5;
+  uint64 gas_price = 6;
+  uint64 tx_index = 7;
+  bytes input = 8;
+  uint64 nonce = 9;
+  string value = 10;
+  string error = 11;
+  bytes block_hash = 12;
+  uint64 block_number = 13;
+  bytes sender = 14;
+  bytes recipient = 15;
+  bytes contract = 16;
+  string revert_reason = 17;
+  uint32 type = 18;
+  bool internal_failed = 19;
+}

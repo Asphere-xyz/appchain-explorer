@@ -1,0 +1,13 @@
+type: google.api.Service
+config_version: 3
+http:
+  rules:
+    - selector: com.ankr.BlockscoutGateway.GetRecentBlocks
+      get: /v1alpha/block
+    - selector: com.ankr.BlockscoutGateway.GetBlockByHashOrNumber
+      get: /v1alpha/block/{number}
+      additional_bindings:
+        - get: /v1alpha/block/number/{number}
+        - get: /v1alpha/block/hash/{hash}
+    - selector: com.ankr.BlockscoutGateway.GetTransactionByHash
+      get: /v1alpha/tx/{hash}

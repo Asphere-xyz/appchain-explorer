@@ -1,0 +1,50 @@
+syntax = "proto3";
+
+option java_package = "com.ankr.proto";
+option java_outer_classname = "BlockscoutGatewayProto";
+
+option go_package = "./shared/types;types";
+
+package com.ankr;
+
+import "block.proto";
+import "transaction.proto";
+
+/**
+ *        ____  ____   ____
+ *   __ _|  _ \|  _ \ / ___|
+ *  / _` | |_) | |_) | |
+ * | (_| |  _ <|  __/| |___
+ *  \__, |_| \_\_|    \____|
+ *  |___/
+ *
+ **/
+
+service BlockscoutGateway {
+  rpc GetRecentBlocks(GetRecentBlocksRequest) returns (GetRecentBlocksReply);
+  rpc GetBlockByHashOrNumber(GetBlockByHashOrNumberRequest) returns (GetBlockByHashOrNumberReply);
+  rpc GetTransactionByHash(GetTransactionByHashRequest) returns (GetTransactionByHashReply);
+}
+
+message GetRecentBlocksRequest {
+  uint64 from_block = 1;
+  uint64 limit = 2;
+}
+message GetRecentBlocksReply {
+  repeated Block blocks = 1;
+}
+
+message GetBlockByHashOrNumberRequest {
+  uint64 number = 1;
+  bytes hash = 2;
+}
+message GetBlockByHashOrNumberReply {
+  Block block = 1;
+}
+
+message GetTransactionByHashRequest {
+  bytes hash = 1;
+}
+message GetTransactionByHashReply {
+  Transaction transaction = 1;
+}
