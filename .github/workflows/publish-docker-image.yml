@@ -10,7 +10,7 @@ on:
     branches:
       - devel
   release:
-    types: [published]
+    types: [ published ]
 
 jobs:
   docker:
@@ -29,6 +29,6 @@ jobs:
       - name: Build and push
         uses: docker/build-push-action@v3
         with:
-          file: {context}/docker/Dockerfile
+          file: "./docker/Dockerfile"
           push: true
           tags: harbor.stkr.io/library/blockscout-explorer:${{ github.head_ref }}
