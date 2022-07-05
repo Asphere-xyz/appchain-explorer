@@ -72,7 +72,7 @@ jobs:
         kubectl create namespace $KUBE_NAMESPACE || true
         kubectl create secret docker-registry docker-secret --docker-server=${{ env.REGISTRY }} --docker-username=${{ secrets.STAKEFI_HARBOR_USERNAME }} --docker-password=${{ secrets.STAKEFI_HARBOR_PASSWORD }} -n $KUBE_NAMESPACE || true
         kubectl patch serviceaccount default -p '{"imagePullSecrets": [{"name": "docker-secret"}]}' -n $KUBE_NAMESPACE || true
-        kubectl annotate namespace $KUBE_NAMESPACE field.cattle.io/projectId={{ RANCHER_PROJECT_DEV }} || true
+        kubectl annotate namespace $KUBE_NAMESPACE field.cattle.io/projectId=${{ env.RANCHER_PROJECT_DEV }} || true
         helm dependency update ./charts
         helm upgrade --install $CHART_NAME --namespace=$KUBE_NAMESPACE \
             --set global.env=$ENVIRONMENT_NAME \
