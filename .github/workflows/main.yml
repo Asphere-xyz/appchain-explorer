@@ -49,6 +49,7 @@ jobs:
     runs-on: [self-hosted]
     needs: build-and-push-image
     env:
+      STKR_HARBOR_USERNAME: 'robot$github-actions-stkr'
       KUBE_NAMESPACE: blockscout-gateway
       ENVIRONMENT_NAME: dev
       CHART_NAME: blockscout-gateway
@@ -59,7 +60,8 @@ jobs:
         rancher kubectl config view --raw > /tmp/config && export KUBECONFIG=/tmp/config
         kubectl create namespace $KUBE_NAMESPACE || true
         kubectl delete secret docker-secret -n $KUBE_NAMESPACE || true
-        kubectl create secret docker-registry docker-secret --docker-server=${{ env.REGISTRY }} --docker-username=${{ env.STKR_HARBOR_USERNAME }} --docker-password=${{ secrets.STKR_HARBOR_PASSWORD }} -n $KUBE_NAMESPACE || true
+        echo $STKR_HARBOR_USERNAME
+        kubectl create secret docker-registry docker-secret --docker-server=${{ env.REGISTRY }} --docker-username=$STKR_HARBOR_USERNAME --docker-password=${{ secrets.STKR_HARBOR_PASSWORD }} -n $KUBE_NAMESPACE || true
         kubectl patch serviceaccount default -p '{"imagePullSecrets": [{"name": "docker-secret"}]}' -n $KUBE_NAMESPACE || true
         kubectl annotate namespace $KUBE_NAMESPACE field.cattle.io/projectId=${{ env.RANCHER_PROJECT_DEV }} || true
         helm dependency update ./charts
