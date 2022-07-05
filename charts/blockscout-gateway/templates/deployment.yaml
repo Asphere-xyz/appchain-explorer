@@ -22,10 +22,10 @@ spec:
         - name: blockscout-gateway
           image: {{ .Values.global.repository }}/{{ .Values.global.image }}:{{ .Values.global.tag }}
           imagePullPolicy: {{ .Values.imagePullPolicy }}
-          # livenessProbe:
-          #   {{- .Values.livenessProbe | toYaml | nindent 12 }}
-          # readinessProbe:
-          #   {{- .Values.readinessProbe | toYaml | nindent 12 }}
+          livenessProbe:
+            {{- .Values.livenessProbe | toYaml | nindent 12 }}
+          readinessProbe:
+            {{- .Values.readinessProbe | toYaml | nindent 12 }}
           envFrom:
             - configMapRef:
                 name: {{ .Chart.Name }}
