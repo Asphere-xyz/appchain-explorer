@@ -1,0 +1,4 @@
+blockscout-gateway:
+  enabled: true
+  global:
+    image: blockscout-gateway

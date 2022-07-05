@@ -1,0 +1,33 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Chart.Name }}
+  labels:
+    app: {{ .Chart.Name }}
+    chart: {{ template "app.chart" . }}
+    release: {{ .Chart.Name }}
+    heritage: {{ .Release.Service }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app: {{ .Chart.Name }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Chart.Name }}
+    spec:
+      containers:
+        # API gateway config
+        - name: blockscout-gateway
+          image: {{ .Values.global.repository }}/{{ .Values.global.image }}:{{ .Values.global.tag }}
+          imagePullPolicy: {{ .Values.imagePullPolicy }}
+          # livenessProbe:
+          #   {{- .Values.livenessProbe | toYaml | nindent 12 }}
+          # readinessProbe:
+          #   {{- .Values.readinessProbe | toYaml | nindent 12 }}
+          envFrom:
+            - configMapRef:
+                name: {{ .Chart.Name }}
+      hostNetwork: {{ .Values.hostNetwork }}
+      dnsPolicy: {{ .Values.dnsPolicy}}

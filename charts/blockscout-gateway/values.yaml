@@ -1,0 +1,35 @@
+global:
+  repository: ankrnetwork
+  tag: test
+  image: blockscout-gateway
+  env: dev
+  host: dev.stkr.io
+
+replicaCount: 2
+hostNetwork: false
+dnsPolicy: ClusterFirst
+imagePullPolicy: IfNotPresent
+
+services:
+  - protocol: TCP
+    port: 8000
+    targetPort: 8000
+
+certificate:
+  enabled: true
+  clusterIssuer: letsencrypt
+  dnsName:
+    dev: "api-bas.dev.stkr.io"
+  secretName: blockscout-gateway-tls
+  tlsPort: 8000
+
+ingress:
+  enabled: true
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    # nginx.ingress.kubernetes.io/use-regex: "true"
+  urlPath: "/"
+
+configMap:
+  TEST_ENV: test
+

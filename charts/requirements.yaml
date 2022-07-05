@@ -1,0 +1,5 @@
+dependencies:
+  - name: blockscout-gateway
+    version: "0.0.1"
+    repository: "file://blockscout-gateway"
+    condition: blockscout-gateway.enabled
