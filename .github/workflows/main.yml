@@ -9,7 +9,7 @@ on:
 env:
   REGISTRY: harbor.stkr.io
   HARBOR_PROJECT: stkr
-  STAKEFI_HARBOR_USERNAME: 'robot$github-actions-stkr'
+  STKR_HARBOR_PASSWORD: 'robot$github-actions-stkr'
   RANCHER_SERVER_URL_DEV: "https://rancher.stkr-dev.ankr.com/v3"
   RANCHER_PROJECT_DEV: "local:p-6r72k"
   SERVICE_NAME: blockscout-gateway
@@ -29,8 +29,8 @@ jobs:
         uses: docker/login-action@f054a8b539a109f9f41c372932f1ae047eff08c9
         with:
           registry: ${{ env.REGISTRY }}
-          username: ${{ secrets.STAKEFI_HARBOR_USERNAME }}
-          password: ${{ secrets.STAKEFI_HARBOR_PASSWORD }}
+          username: ${{ secrets.STKR_HARBOR_PASSWORD }}
+          password: ${{ secrets.STKR_HARBOR_PASSWORD }}
 
       - name: Extract metadata (tags, labels) for Docker
         id: meta
@@ -59,7 +59,7 @@ jobs:
         rancher kubectl config view --raw > /tmp/config && export KUBECONFIG=/tmp/config
         kubectl create namespace $KUBE_NAMESPACE || true
         kubectl delete secret docker-secret -n $KUBE_NAMESPACE || true
-        kubectl create secret docker-registry docker-secret --docker-server=${{ env.REGISTRY }} --docker-username=${{ env.STAKEFI_HARBOR_USERNAME }} --docker-password=${{ secrets.STAKEFI_HARBOR_PASSWORD }} -n $KUBE_NAMESPACE || true
+        kubectl create secret docker-registry docker-secret --docker-server=${{ env.REGISTRY }} --docker-username=${{ env.STKR_HARBOR_PASSWORD }} --docker-password=${{ secrets.STKR_HARBOR_PASSWORD }} -n $KUBE_NAMESPACE || true
         kubectl patch serviceaccount default -p '{"imagePullSecrets": [{"name": "docker-secret"}]}' -n $KUBE_NAMESPACE || true
         kubectl annotate namespace $KUBE_NAMESPACE field.cattle.io/projectId=${{ env.RANCHER_PROJECT_DEV }} || true
         helm dependency update ./charts
