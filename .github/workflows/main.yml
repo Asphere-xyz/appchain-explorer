@@ -67,7 +67,7 @@ jobs:
     steps:
      - uses: actions/checkout@v1
      - run: |
-        rancher login ${{ env.RANCHER_SERVER_URL_DEV }}  --token ${{ secrets.RANCHER_TOKEN_DEV }} --context ${{ env.RANCHER_PROJECT_DEV }}
+        rancher login ${{ env.RANCHER_SERVER_URL_DEV }}  --token ${{ secrets.STKR_RANCHER_TOKEN_DEV }} --context ${{ env.RANCHER_PROJECT_DEV }}
         rancher kubectl config view --raw > /tmp/config && export KUBECONFIG=/tmp/config
         kubectl create namespace $KUBE_NAMESPACE || true
         kubectl create secret docker-registry docker-secret --docker-server=${{ env.REGISTRY }} --docker-username=${{ secrets.STAKEFI_HARBOR_USERNAME }} --docker-password=${{ secrets.STAKEFI_HARBOR_PASSWORD }} -n $KUBE_NAMESPACE || true
