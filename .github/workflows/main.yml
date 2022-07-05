@@ -9,7 +9,7 @@ on:
 env:
   REGISTRY: harbor.stkr.io
   HARBOR_PROJECT: stkr
-  STAKEFI_HARBOR_USERNAME: 'robot$actions'
+  STAKEFI_HARBOR_USERNAME: 'robot$github-actions-stkr'
   RANCHER_SERVER_URL_DEV: "https://rancher.stkr-dev.ankr.com/v3"
   RANCHER_PROJECT_DEV: "local:p-6r72k"
   SERVICE_NAME: blockscout-gateway
