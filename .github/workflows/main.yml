@@ -58,7 +58,7 @@ jobs:
 
   deploy-develop:
     runs-on: [self-hosted]
-    if: github.ref == 'refs/heads/develop'
+    # if: github.ref == 'refs/heads/develop'
     needs: build-and-push-image
     env:
       KUBE_NAMESPACE: blockscout-gateway
