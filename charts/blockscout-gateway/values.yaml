@@ -5,7 +5,7 @@ global:
   env: dev
   host: dev.stkr.io
 
-replicaCount: 2
+replicaCount: 1
 hostNetwork: false
 dnsPolicy: ClusterFirst
 imagePullPolicy: IfNotPresent
@@ -30,9 +30,13 @@ ingress:
     # nginx.ingress.kubernetes.io/use-regex: "true"
   urlPath: "/"
 
+metrics:
+  enabled: false
+  port: 7575
+
 livenessProbe:
   httpGet:
-    port: 8000
+    port: 6565
     path: "/actuator"
   failureThreshold: 1
   initialDelaySeconds: 90
@@ -41,7 +45,7 @@ livenessProbe:
   timeoutSeconds: 2
 readinessProbe:
   httpGet:
-    port: 8000
+    port: 6565
     path: "/actuator"
   failureThreshold: 1
   initialDelaySeconds: 15

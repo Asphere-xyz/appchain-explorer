@@ -1,5 +1,0 @@
-FROM golang:1.14 AS run
-WORKDIR /app
-COPY ./node /app/node
-RUN chmod +x /app/node
-CMD ["/app/node"]
