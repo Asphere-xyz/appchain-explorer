@@ -11,3 +11,5 @@ http:
         - get: /v1alpha/block/hash/{hash}
     - selector: com.ankr.BlockscoutGateway.GetTransactionByHash
       get: /v1alpha/tx/{hash}
+    - selector: com.ankr.BlockscoutGateway.GetTokenTransfers
+      get: /v1alpha/token/transfers

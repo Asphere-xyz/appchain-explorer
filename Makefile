@@ -19,3 +19,6 @@ build_proto:
 	protoc -I=shared/types --gofast_out=plugins=grpc:./ shared/types/*.proto
 	protoc -I=shared/types --gogo_out=plugins=grpc:./ --grpc-gateway_opt grpc_api_configuration=./shared/types/gateway.yaml --grpc-gateway_out=allow_patch_feature=false:./ shared/types/gateway.proto
 
+.PHONY: swagger
+swagger:
+	protoc -I shared/types --swagger_out . --swagger_opt logtostderr=true ./shared/types/gateway.proto

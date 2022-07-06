@@ -79,3 +79,12 @@ func (s *Service) GetTransactionByHash(ctx context.Context, txHash []byte) (*typ
 	}
 	return txToProto(tx), err
 }
+
+func (s *Service) GetTokenTransfers(ctx context.Context, tokenContract []byte, block uint64, limit uint64) ([]*types.TokenTransfer, error) {
+	transfers, err := entity.TokenTransfersByBlockNumber(ctx, s.db, sql.NullInt64{Int64: int64(block)})
+	if err == sql.ErrNoRows {
+		return nil, nil
+	}
+	result := tokenTransfersToProto(transfers)
+	return result, err
+}

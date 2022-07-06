@@ -57,3 +57,25 @@ func txToProto(tx *entity.Transaction) *types.Transaction {
 		InternalFailed:    tx.HasErrorInInternalTxs.Bool,
 	}
 }
+
+func tokenTransferToProto(transfer *entity.TokenTransfer) *types.TokenTransfer {
+	if transfer == nil {
+		return nil
+	}
+	return &types.TokenTransfer{
+		TxHash:        transfer.TransactionHash,
+		AddressFrom:   transfer.FromAddressHash,
+		AddressTo:     transfer.ToAddressHash,
+		TokenContract: transfer.TokenContractAddressHash,
+		Amount:        uint64(transfer.Amount.Float64),
+		BlockNumber:   uint64(transfer.BlockNumber.Int64),
+		Timestamp:     uint64(transfer.UpdatedAt.Unix()),
+	}
+}
+
+func tokenTransfersToProto(transfers []*entity.TokenTransfer) (result []*types.TokenTransfer) {
+	for _, b := range transfers {
+		result = append(result, tokenTransferToProto(b))
+	}
+	return
+}

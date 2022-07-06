@@ -9,6 +9,8 @@ package com.ankr;
 
 import "block.proto";
 import "transaction.proto";
+import "token_transfer.proto";
+import "google/api/annotations.proto";
 
 /**
  *        ____  ____   ____
@@ -21,9 +23,26 @@ import "transaction.proto";
  **/
 
 service BlockscoutGateway {
-  rpc GetRecentBlocks(GetRecentBlocksRequest) returns (GetRecentBlocksReply);
-  rpc GetBlockByHashOrNumber(GetBlockByHashOrNumberRequest) returns (GetBlockByHashOrNumberReply);
-  rpc GetTransactionByHash(GetTransactionByHashRequest) returns (GetTransactionByHashReply);
+  rpc GetRecentBlocks(GetRecentBlocksRequest) returns (GetRecentBlocksReply) {
+    option (google.api.http) = {
+      get: "/v1alpha/block"
+    };
+  }
+  rpc GetBlockByHashOrNumber(GetBlockByHashOrNumberRequest) returns (GetBlockByHashOrNumberReply) {
+    option (google.api.http) = {
+      get: "/v1alpha/block/{number}"
+    };
+  }
+  rpc GetTransactionByHash(GetTransactionByHashRequest) returns (GetTransactionByHashReply) {
+    option (google.api.http) = {
+      get: "/v1alpha/tx/{hash}"
+    };
+  }
+  rpc GetTokenTransfers(GetTokenTransfersRequest) returns (GetTokenTransfersReply) {
+    option (google.api.http) = {
+      get: "/v1alpha/token/transfers"
+    };
+  }
 }
 
 message GetRecentBlocksRequest {
@@ -47,4 +66,13 @@ message GetTransactionByHashRequest {
 }
 message GetTransactionByHashReply {
   Transaction transaction = 1;
+}
+
+message GetTokenTransfersRequest {
+  bytes token_contract = 1;
+  uint64 from_block = 2;
+  uint64 limit = 3;
+}
+message GetTokenTransfersReply {
+  repeated TokenTransfer transfers = 1;
 }

@@ -41,3 +41,10 @@ func (s *Service) GetTransactionByHash(ctx context.Context, req *types.GetTransa
 	tx, err := s.databaseService.GetTransactionByHash(ctx, req.Hash)
 	return &types.GetTransactionByHashReply{Transaction: tx}, err
 }
+
+func (s *Service) GetTokenTransfers(ctx context.Context, req *types.GetTokenTransfersRequest) (*types.GetTokenTransfersReply, error) {
+	transfers, err := s.databaseService.GetTokenTransfers(ctx, req.TokenContract, req.FromBlock, req.Limit)
+	return &types.GetTokenTransfersReply{
+		Transfers: transfers,
+	}, err
+}

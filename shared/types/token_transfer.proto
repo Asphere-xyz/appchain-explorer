@@ -1,0 +1,18 @@
+syntax = "proto3";
+
+option java_package = "com.ankr.proto";
+option java_outer_classname = "TokenTransferProto";
+
+option go_package = "./shared/types;types";
+
+package com.ankr;
+
+message TokenTransfer {
+  bytes tx_hash = 1;
+  bytes address_from = 2;
+  bytes address_to = 3;
+  bytes token_contract = 4;
+  uint64 amount = 5;
+  uint64 block_number = 6;
+  uint64 timestamp = 7;
+}

@@ -1,0 +1,317 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "gateway.proto",
+    "version": "version not set"
+  },
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "paths": {
+    "/v1alpha/block": {
+      "get": {
+        "operationId": "BlockscoutGateway_GetRecentBlocks",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/ankrGetRecentBlocksReply"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "from_block",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "uint64"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "uint64"
+          }
+        ],
+        "tags": [
+          "BlockscoutGateway"
+        ]
+      }
+    },
+    "/v1alpha/block/{number}": {
+      "get": {
+        "operationId": "BlockscoutGateway_GetBlockByHashOrNumber",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/ankrGetBlockByHashOrNumberReply"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "number",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "format": "uint64"
+          },
+          {
+            "name": "hash",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "byte"
+          }
+        ],
+        "tags": [
+          "BlockscoutGateway"
+        ]
+      }
+    },
+    "/v1alpha/tx/{hash}": {
+      "get": {
+        "operationId": "BlockscoutGateway_GetTransactionByHash",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/ankrGetTransactionByHashReply"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "hash",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "format": "byte"
+          }
+        ],
+        "tags": [
+          "BlockscoutGateway"
+        ]
+      }
+    }
+  },
+  "definitions": {
+    "ankrBlock": {
+      "type": "object",
+      "properties": {
+        "block_hash": {
+          "type": "string",
+          "format": "byte"
+        },
+        "block_number": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "coinbase": {
+          "type": "string",
+          "format": "byte"
+        },
+        "difficulty": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "nonce": {
+          "type": "string",
+          "format": "byte"
+        },
+        "parent_hash": {
+          "type": "string",
+          "format": "byte"
+        },
+        "timestamp": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "gas_limit": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "gas_used": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "size_bytes": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "txs_count": {
+          "type": "integer",
+          "format": "int64"
+        }
+      }
+    },
+    "ankrGetBlockByHashOrNumberReply": {
+      "type": "object",
+      "properties": {
+        "block": {
+          "$ref": "#/definitions/ankrBlock"
+        }
+      }
+    },
+    "ankrGetRecentBlocksReply": {
+      "type": "object",
+      "properties": {
+        "blocks": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/ankrBlock"
+          }
+        }
+      }
+    },
+    "ankrGetTransactionByHashReply": {
+      "type": "object",
+      "properties": {
+        "transaction": {
+          "$ref": "#/definitions/ankrTransaction"
+        }
+      }
+    },
+    "ankrTransaction": {
+      "type": "object",
+      "properties": {
+        "tx_hash": {
+          "type": "string",
+          "format": "byte"
+        },
+        "status": {
+          "$ref": "#/definitions/ankrTransactionStatus"
+        },
+        "gas": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "cumulative_gas_used": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "gas_used": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "gas_price": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "tx_index": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "input": {
+          "type": "string",
+          "format": "byte"
+        },
+        "nonce": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "value": {
+          "type": "string"
+        },
+        "error": {
+          "type": "string"
+        },
+        "block_hash": {
+          "type": "string",
+          "format": "byte"
+        },
+        "block_number": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "sender": {
+          "type": "string",
+          "format": "byte"
+        },
+        "recipient": {
+          "type": "string",
+          "format": "byte"
+        },
+        "contract": {
+          "type": "string",
+          "format": "byte"
+        },
+        "revert_reason": {
+          "type": "string"
+        },
+        "type": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "internal_failed": {
+          "type": "boolean"
+        }
+      }
+    },
+    "ankrTransactionStatus": {
+      "type": "string",
+      "enum": [
+        "REVERTED",
+        "SUCCESS"
+      ],
+      "default": "REVERTED"
+    },
+    "protobufAny": {
+      "type": "object",
+      "properties": {
+        "type_url": {
+          "type": "string"
+        },
+        "value": {
+          "type": "string",
+          "format": "byte"
+        }
+      }
+    },
+    "runtimeError": {
+      "type": "object",
+      "properties": {
+        "error": {
+          "type": "string"
+        },
+        "code": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "message": {
+          "type": "string"
+        },
+        "details": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/protobufAny"
+          }
+        }
+      }
+    }
+  }
+}
