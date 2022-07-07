@@ -6,14 +6,24 @@ import (
 	"github.com/Ankr-network/ankr-protocol/shared"
 	"github.com/Ankr-network/ankr-protocol/shared/database"
 	"github.com/Ankr-network/ankr-protocol/shared/types"
+	"github.com/grpc-ecosystem/go-grpc-middleware"
+	grpc_zap "github.com/grpc-ecosystem/go-grpc-middleware/logging/zap"
 	"github.com/grpc-ecosystem/go-grpc-prometheus"
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
+	"go.uber.org/zap"
 	"google.golang.org/grpc"
 	"net"
 	"net/http"
 	"strings"
+	"time"
+)
+
+type key int
+
+const (
+	requestIDKey key = 0
 )
 
 type Service struct {
@@ -35,11 +45,19 @@ func (s *Service) Start(cp shared.IConfigProvider) error {
 	if err != nil {
 		return errors.Wrapf(err, "failed to listen for address (%s)", config.GrpcAddress)
 	}
-	serverOps := []grpc.ServerOption{
-		grpc.StreamInterceptor(grpc_prometheus.StreamServerInterceptor),
-		grpc.UnaryInterceptor(grpc_prometheus.UnaryServerInterceptor),
-	}
-	s.grpcServer = grpc.NewServer(serverOps...)
+	logger, _ := zap.NewProduction()
+	defer logger.Sync()
+	grpc_zap.ReplaceGrpcLoggerV2WithVerbosity(logger, int(zap.DebugLevel))
+	s.grpcServer = grpc.NewServer(
+		grpc_middleware.WithStreamServerChain(
+			grpc_prometheus.StreamServerInterceptor,
+			grpc_zap.StreamServerInterceptor(logger),
+		),
+		grpc_middleware.WithUnaryServerChain(
+			grpc_prometheus.UnaryServerInterceptor,
+			grpc_zap.UnaryServerInterceptor(logger),
+		),
+	)
 	grpc_prometheus.Register(s.grpcServer)
 	grpc_prometheus.EnableHandlingTimeHistogram()
 	types.RegisterBlockscoutGatewayServer(s.grpcServer, s)
@@ -69,7 +87,10 @@ func (s *Service) Start(cp shared.IConfigProvider) error {
 	}
 	go func() {
 		log.Infof("gateway HTTP server is listening on address %s", config.HttpAddress)
-		err := http.Serve(httpListener, allowCORS(mux))
+		nextRequestID := func() string {
+			return fmt.Sprintf("%d", time.Now().UnixNano())
+		}
+		err := http.Serve(httpListener, tracing(nextRequestID)(logging(logger)(allowCORS(mux))))
 		if err != nil {
 			log.Panicf("failed to start http server: %+v", err)
 		}
@@ -96,4 +117,39 @@ func allowCORS(h http.Handler) http.Handler {
 		}
 		h.ServeHTTP(w, r)
 	})
+}
+
+func logging(logger *zap.Logger) func(http.Handler) http.Handler {
+	return func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			defer func() {
+				requestID, ok := r.Context().Value(requestIDKey).(string)
+				if !ok {
+					requestID = "unknown"
+				}
+				logger.Debug("Request",
+					zap.String("RequestID", requestID),
+					zap.String("Method", r.Method),
+					zap.String("Path", r.URL.Path),
+					zap.String("Addr", r.RemoteAddr),
+					zap.String("UserAgent", r.UserAgent()),
+				)
+			}()
+			next.ServeHTTP(w, r)
+		})
+	}
+}
+
+func tracing(nextRequestID func() string) func(http.Handler) http.Handler {
+	return func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			requestID := r.Header.Get("X-Request-Id")
+			if requestID == "" {
+				requestID = nextRequestID()
+			}
+			ctx := context.WithValue(r.Context(), requestIDKey, requestID)
+			w.Header().Set("X-Request-Id", requestID)
+			next.ServeHTTP(w, r.WithContext(ctx))
+		})
+	}
 }
