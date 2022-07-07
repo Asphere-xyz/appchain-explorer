@@ -14,6 +14,9 @@ services:
   - protocol: TCP
     port: 8000
     targetPort: 8000
+  - protocol: TCP
+    port: 6565
+    targetPort: 6565
 
 certificate:
   enabled: true
@@ -36,7 +39,7 @@ metrics:
 
 livenessProbe:
   httpGet:
-    port: 6565
+    port: 6001
     path: "/actuator"
   failureThreshold: 1
   initialDelaySeconds: 90
@@ -45,7 +48,7 @@ livenessProbe:
   timeoutSeconds: 2
 readinessProbe:
   httpGet:
-    port: 6565
+    port: 6001
     path: "/actuator"
   failureThreshold: 1
   initialDelaySeconds: 15
