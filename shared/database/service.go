@@ -51,6 +51,21 @@ func (s *Service) GetRecentBlocks(ctx context.Context, fromBlock, limit uint64) 
 	return result, err
 }
 
+func (s *Service) GetRecentTxs(ctx context.Context, fromTs string, limit uint64) ([]*types.Transaction, error) {
+	var txs []*entity.Transaction
+	var err error
+	if fromTs != "" {
+		txs, err = entity.TransactionsByTsLimit(ctx, s.db, fromTs, limit)
+	} else {
+		txs, err = entity.TransactionsByLimit(ctx, s.db, limit)
+	}
+	if err != nil {
+		return nil, err
+	}
+	result := txsToProto(txs)
+	return result, err
+}
+
 func (s *Service) GetBlockByHash(ctx context.Context, blockHash []byte) (*types.Block, error) {
 	block, err := entity.BlockByHash(ctx, s.db, blockHash)
 	if err == sql.ErrNoRows {

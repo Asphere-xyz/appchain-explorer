@@ -17,3 +17,16 @@ WHERE %%number uint64%% >= number
 ORDER BY "timestamp" DESC
 LIMIT %%limit uint64%%
 ENDSQL
+
+xo query "$PG_URL" --append --trim --strip -o shared/entity -T Transaction <<ENDSQL
+SELECT * FROM "transactions"
+ORDER BY "updated_at" DESC
+LIMIT %%limit uint64%%
+ENDSQL
+
+xo query "$PG_URL" --append --trim --strip -o shared/entity -T Transaction <<ENDSQL
+SELECT * FROM "transactions"
+WHERE %%ts string%% <= updated_at
+ORDER BY "updated_at" DESC
+LIMIT %%limit uint64%%
+ENDSQL

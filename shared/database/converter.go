@@ -26,8 +26,14 @@ func blockToProto(block *entity.Block) *types.Block {
 		GasLimit:    uint64(block.GasLimit),
 		GasUsed:     uint64(block.GasUsed),
 		SizeBytes:   uint32(block.Size.Int64),
-		TxsCount:    0, //TODO
 	}
+}
+
+func txsToProto(txs []*entity.Transaction) (result []*types.Transaction) {
+	for _, tx := range txs {
+		result = append(result, txToProto(tx))
+	}
+	return
 }
 
 func txToProto(tx *entity.Transaction) *types.Transaction {

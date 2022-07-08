@@ -2,6 +2,7 @@ package gateway
 
 import (
 	"context"
+	"fmt"
 	"github.com/Ankr-network/ankr-protocol/shared/types"
 )
 
@@ -16,6 +17,9 @@ func checkHasMore(limit uint32, length int) (int, bool) {
 const DefaultRecentBlockLimit = 10
 const MaxRecentBlockLimit = 100
 
+const DefaultRecentTxsLimit = 10
+const MaxRecentTxLimit = 100
+
 func (s *Service) GetRecentBlocks(ctx context.Context, req *types.GetRecentBlocksRequest) (*types.GetRecentBlocksReply, error) {
 	if req.Limit == 0 {
 		req.Limit = DefaultRecentBlockLimit
@@ -24,6 +28,16 @@ func (s *Service) GetRecentBlocks(ctx context.Context, req *types.GetRecentBlock
 	}
 	blocks, err := s.databaseService.GetRecentBlocks(ctx, req.FromBlock, req.Limit)
 	return &types.GetRecentBlocksReply{Blocks: blocks}, err
+}
+
+func (s *Service) GetRecentTxs(ctx context.Context, req *types.GetRecentTxsRequest) (*types.GetRecentTxsReply, error) {
+	if req.Limit == 0 {
+		req.Limit = DefaultRecentTxsLimit
+	} else if req.Limit > MaxRecentTxLimit {
+		req.Limit = MaxRecentTxLimit
+	}
+	txs, err := s.databaseService.GetRecentTxs(ctx, fmt.Sprintf("%d", req.FromTx), req.Limit)
+	return &types.GetRecentTxsReply{Txs: txs}, err
 }
 
 func (s *Service) GetBlockByHashOrNumber(ctx context.Context, req *types.GetBlockByHashOrNumberRequest) (*types.GetBlockByHashOrNumberReply, error) {

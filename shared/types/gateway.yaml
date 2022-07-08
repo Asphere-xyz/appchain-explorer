@@ -4,6 +4,8 @@ http:
   rules:
     - selector: com.ankr.BlockscoutGateway.GetRecentBlocks
       get: /v1alpha/block
+    - selector: com.ankr.BlockscoutGateway.GetRecentTxs
+      get: /v1alpha/tx
     - selector: com.ankr.BlockscoutGateway.GetBlockByHashOrNumber
       get: /v1alpha/block/{number}
       additional_bindings:

@@ -28,6 +28,11 @@ service BlockscoutGateway {
       get: "/v1alpha/block"
     };
   }
+  rpc GetRecentTxs(GetRecentTxsRequest) returns (GetRecentTxsReply) {
+    option (google.api.http) = {
+      get: "/v1alpha/tx"
+    };
+  }
   rpc GetBlockByHashOrNumber(GetBlockByHashOrNumberRequest) returns (GetBlockByHashOrNumberReply) {
     option (google.api.http) = {
       get: "/v1alpha/block/{number}"
@@ -51,6 +56,14 @@ message GetRecentBlocksRequest {
 }
 message GetRecentBlocksReply {
   repeated Block blocks = 1;
+}
+
+message GetRecentTxsRequest {
+  uint64 from_tx = 1;
+  uint64 limit = 2;
+}
+message GetRecentTxsReply {
+  repeated Transaction txs = 1;
 }
 
 message GetBlockByHashOrNumberRequest {

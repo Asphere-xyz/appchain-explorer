@@ -613,3 +613,62 @@ func (t *Transaction) Block(ctx context.Context, db DB) (*Block, error) {
 func (t *Transaction) Address(ctx context.Context, db DB) (*Address, error) {
 	return AddressByHash(ctx, db, t.ToAddressHash)
 }
+
+// TransactionsByLimit runs a custom query, returning results as Transaction.
+func TransactionsByLimit(ctx context.Context, db DB, limit uint64) ([]*Transaction, error) {
+	// query
+	const sqlstr = `SELECT * FROM "transactions" ` +
+		`ORDER BY "updated_at" DESC ` +
+		`LIMIT $1`
+	// run
+	logf(sqlstr, limit)
+	rows, err := db.QueryContext(ctx, sqlstr, limit)
+	if err != nil {
+		return nil, logerror(err)
+	}
+	defer rows.Close()
+	// load results
+	var res []*Transaction
+	for rows.Next() {
+		var t Transaction
+		// scan
+		if err := rows.Scan(&t.CumulativeGasUsed, &t.Error, &t.Gas, &t.GasPrice, &t.GasUsed, &t.Hash, &t.Index, &t.Input, &t.Nonce, &t.R, &t.S, &t.Status, &t.V, &t.Value, &t.InsertedAt, &t.UpdatedAt, &t.BlockHash, &t.BlockNumber, &t.FromAddressHash, &t.ToAddressHash, &t.CreatedContractAddressHash, &t.CreatedContractCodeIndexedAt, &t.EarliestProcessingStart, &t.OldBlockHash, &t.RevertReason, &t.MaxPriorityFeePerGas, &t.MaxFeePerGas, &t.Type, &t.HasErrorInInternalTxs); err != nil {
+			return nil, logerror(err)
+		}
+		res = append(res, &t)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, logerror(err)
+	}
+	return res, nil
+}
+
+// TransactionsByTsLimit runs a custom query, returning results as Transaction.
+func TransactionsByTsLimit(ctx context.Context, db DB, ts string, limit uint64) ([]*Transaction, error) {
+	// query
+	const sqlstr = `SELECT * FROM "transactions" ` +
+		`WHERE $1 <= updated_at ` +
+		`ORDER BY "updated_at" DESC ` +
+		`LIMIT $2`
+	// run
+	logf(sqlstr, ts, limit)
+	rows, err := db.QueryContext(ctx, sqlstr, ts, limit)
+	if err != nil {
+		return nil, logerror(err)
+	}
+	defer rows.Close()
+	// load results
+	var res []*Transaction
+	for rows.Next() {
+		var t Transaction
+		// scan
+		if err := rows.Scan(&t.CumulativeGasUsed, &t.Error, &t.Gas, &t.GasPrice, &t.GasUsed, &t.Hash, &t.Index, &t.Input, &t.Nonce, &t.R, &t.S, &t.Status, &t.V, &t.Value, &t.InsertedAt, &t.UpdatedAt, &t.BlockHash, &t.BlockNumber, &t.FromAddressHash, &t.ToAddressHash, &t.CreatedContractAddressHash, &t.CreatedContractCodeIndexedAt, &t.EarliestProcessingStart, &t.OldBlockHash, &t.RevertReason, &t.MaxPriorityFeePerGas, &t.MaxFeePerGas, &t.Type, &t.HasErrorInInternalTxs); err != nil {
+			return nil, logerror(err)
+		}
+		res = append(res, &t)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, logerror(err)
+	}
+	return res, nil
+}
