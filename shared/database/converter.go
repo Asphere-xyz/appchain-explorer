@@ -1,6 +1,7 @@
 package database
 
 import (
+	"fmt"
 	"github.com/Ankr-network/ankr-protocol/shared/entity"
 	"github.com/Ankr-network/ankr-protocol/shared/types"
 	"strconv"
@@ -20,14 +21,12 @@ func blockToProto(block *entity.Block) *types.Block {
 	return &types.Block{
 		BlockHash:   block.Hash,
 		BlockNumber: uint64(block.Number),
-		Coinbase:    block.MinerHash,
-		Difficulty:  uint64(block.Difficulty.Float64),
-		Nonce:       block.Nonce,
-		ParentHash:  block.ParentHash,
+		MinerHash:   fmt.Sprintf("0x%x", block.MinerHash),
 		Timestamp:   uint64(block.Timestamp.Unix()),
 		GasLimit:    uint64(block.GasLimit),
 		GasUsed:     uint64(block.GasUsed),
 		SizeBytes:   uint32(block.Size.Int64),
+		TxsCount:    0, //TODO
 	}
 }
 

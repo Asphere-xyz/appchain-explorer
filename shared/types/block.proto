@@ -10,6 +10,17 @@ package com.ankr;
 message Block {
   bytes block_hash = 1;
   uint64 block_number = 2;
+  string miner_hash = 3;
+  uint64 timestamp = 4;
+  uint64 gas_limit = 5;
+  uint64 gas_used = 6;
+  uint32 size_bytes = 7;
+  uint32 txs_count = 8;
+}
+
+message BlockDetails {
+  bytes block_hash = 1;
+  uint64 block_number = 2;
   bytes coinbase = 3;
   uint64 difficulty = 4;
   bytes nonce = 5;
