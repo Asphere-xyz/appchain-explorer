@@ -17,7 +17,6 @@ import (
 	"net"
 	"net/http"
 	"strings"
-	"time"
 )
 
 type key int
@@ -87,10 +86,7 @@ func (s *Service) Start(cp shared.IConfigProvider) error {
 	}
 	go func() {
 		log.Infof("gateway HTTP server is listening on address %s", config.HttpAddress)
-		nextRequestID := func() string {
-			return fmt.Sprintf("%d", time.Now().UnixNano())
-		}
-		err := http.Serve(httpListener, tracing(nextRequestID)(logging(logger)(allowCORS(mux))))
+		err := http.Serve(httpListener, allowCORS(mux))
 		if err != nil {
 			log.Panicf("failed to start http server: %+v", err)
 		}
