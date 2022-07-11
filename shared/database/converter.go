@@ -20,7 +20,7 @@ func blockToProto(block *entity.Block) *types.Block {
 	}
 	return &types.Block{
 		BlockHash:   block.Hash,
-		BlockNumber: uint64(block.Number),
+		BlockNumber: uint32(block.Number),
 		MinerHash:   fmt.Sprintf("0x%x", block.MinerHash),
 		Timestamp:   uint64(block.Timestamp.Unix()),
 		GasLimit:    uint64(block.GasLimit),
