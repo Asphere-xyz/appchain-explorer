@@ -19,7 +19,7 @@ services:
     targetPort: 6565
 
 certificate:
-  enabled: false
+  enabled: true
   clusterIssuer: letsencrypt
   dnsName:
     dev: "api-bas.dev.stkr.io"

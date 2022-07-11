@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en-US">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>TEST</title>
+    <script>
+
+        var xhr = new XMLHttpRequest();
+        xhr.withCredentials = true;
+
+        xhr.addEventListener("readystatechange", function() {
+            if(this.readyState === 4) {
+                console.log(this.responseText);
+            }
+        });
+
+        // xhr.open("GET", "https://api-bas.dev.stkr.io/v1alpha/block?limit=10");
+        xhr.open("GET", "http://localhost:8000/v1alpha/block?limit=10");
+
+        xhr.send();
+    </script>
+</head>
+
+<body>
+
+</body>
+
+</html>
