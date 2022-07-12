@@ -59,7 +59,7 @@ message GetRecentBlocksReply {
 }
 
 message GetRecentTxsRequest {
-  uint64 from_tx = 1;
+  uint64 from_ts = 1;
   uint64 limit = 2;
 }
 message GetRecentTxsReply {

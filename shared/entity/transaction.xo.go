@@ -644,10 +644,10 @@ func TransactionsByLimit(ctx context.Context, db DB, limit uint64) ([]*Transacti
 }
 
 // TransactionsByTsLimit runs a custom query, returning results as Transaction.
-func TransactionsByTsLimit(ctx context.Context, db DB, ts string, limit uint64) ([]*Transaction, error) {
+func TransactionsByTsLimit(ctx context.Context, db DB, ts time.Time, limit uint64) ([]*Transaction, error) {
 	// query
 	const sqlstr = `SELECT * FROM "transactions" ` +
-		`WHERE $1 <= updated_at ` +
+		`WHERE updated_at < $1 ` +
 		`ORDER BY "updated_at" DESC ` +
 		`LIMIT $2`
 	// run

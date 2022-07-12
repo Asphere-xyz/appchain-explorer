@@ -445,6 +445,35 @@ func (b *Block) Address(ctx context.Context, db DB) (*Address, error) {
 	return AddressByHash(ctx, db, b.MinerHash)
 }
 
+// BlocksByLimit runs a custom query, returning results as Block.
+func BlocksByLimit(ctx context.Context, db DB, limit uint64) ([]*Block, error) {
+	// query
+	const sqlstr = `SELECT * FROM "blocks" ` +
+		`ORDER BY "timestamp" DESC ` +
+		`LIMIT $1`
+	// run
+	logf(sqlstr, limit)
+	rows, err := db.QueryContext(ctx, sqlstr, limit)
+	if err != nil {
+		return nil, logerror(err)
+	}
+	defer rows.Close()
+	// load results
+	var res []*Block
+	for rows.Next() {
+		var b Block
+		// scan
+		if err := rows.Scan(&b.Consensus, &b.Difficulty, &b.GasLimit, &b.GasUsed, &b.Hash, &b.MinerHash, &b.Nonce, &b.Number, &b.ParentHash, &b.Size, &b.Timestamp, &b.TotalDifficulty, &b.InsertedAt, &b.UpdatedAt, &b.RefetchNeeded, &b.BaseFeePerGas, &b.IsEmpty); err != nil {
+			return nil, logerror(err)
+		}
+		res = append(res, &b)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, logerror(err)
+	}
+	return res, nil
+}
+
 // BlocksByNumberLimit runs a custom query, returning results as Block.
 func BlocksByNumberLimit(ctx context.Context, db DB, number, limit uint64) ([]*Block, error) {
 	// query
@@ -474,32 +503,3 @@ func BlocksByNumberLimit(ctx context.Context, db DB, number, limit uint64) ([]*B
 	}
 	return res, nil
 }
-
-// BlocksByLimit runs a custom query, returning results as Block.
-func BlocksByLimit(ctx context.Context, db DB, limit uint64) ([]*Block, error) {
-	// query
-	const sqlstr = `SELECT * FROM "blocks" ` +
-		`ORDER BY "timestamp" DESC ` +
-		`LIMIT $1`
-	// run
-	logf(sqlstr, limit)
-	rows, err := db.QueryContext(ctx, sqlstr, limit)
-	if err != nil {
-		return nil, logerror(err)
-	}
-	defer rows.Close()
-	// load results
-	var res []*Block
-	for rows.Next() {
-		var b Block
-		// scan
-		if err := rows.Scan(&b.Consensus, &b.Difficulty, &b.GasLimit, &b.GasUsed, &b.Hash, &b.MinerHash, &b.Nonce, &b.Number, &b.ParentHash, &b.Size, &b.Timestamp, &b.TotalDifficulty, &b.InsertedAt, &b.UpdatedAt, &b.RefetchNeeded, &b.BaseFeePerGas, &b.IsEmpty); err != nil {
-			return nil, logerror(err)
-		}
-		res = append(res, &b)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, logerror(err)
-	}
-	return res, nil
-} // BlocksByLimit runs a custom query, returning results as Block.

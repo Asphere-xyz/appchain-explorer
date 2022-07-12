@@ -79,6 +79,7 @@ func txToProto(tx *entity.Transaction) *types.Transaction {
 		RevertReason:      tx.RevertReason.String,
 		Type:              uint32(tx.Type.Int64),
 		InternalFailed:    tx.HasErrorInInternalTxs.Bool,
+		Timestamp:         uint32(tx.UpdatedAt.Unix()),
 	}
 }
 

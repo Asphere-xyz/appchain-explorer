@@ -9,6 +9,7 @@ import (
 	"github.com/Ankr-network/ankr-protocol/shared/types"
 	_ "github.com/jackc/pgx/v4/stdlib"
 	"strings"
+	"time"
 )
 
 type Service struct {
@@ -53,14 +54,12 @@ func (s *Service) GetRecentBlocks(ctx context.Context, fromBlock, limit uint64) 
 	return result, err
 }
 
-func (s *Service) GetRecentTxs(ctx context.Context, fromTs string, limit uint64) ([]*types.Transaction, error) {
+func (s *Service) GetRecentTxs(ctx context.Context, timestamp int64, limit uint64) ([]*types.Transaction, error) {
 	var txs []*entity.Transaction
 	var err error
-	if fromTs != "" {
-		txs, err = entity.TransactionsByTsLimit(ctx, s.db, fromTs, limit)
-	} else {
-		txs, err = entity.TransactionsByLimit(ctx, s.db, limit)
-	}
+	from := time.Unix(timestamp, 0)
+	//.Format("2006–01-02 15:04:03")
+	txs, err = entity.TransactionsByTsLimit(ctx, s.db, from, limit)
 	if err != nil {
 		return nil, err
 	}

@@ -32,4 +32,5 @@ message Transaction {
   string revert_reason = 17;
   uint32 type = 18;
   bool internal_failed = 19;
+  uint32 timestamp = 20;
 }

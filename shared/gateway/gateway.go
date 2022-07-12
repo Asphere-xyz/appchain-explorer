@@ -2,7 +2,6 @@ package gateway
 
 import (
 	"context"
-	"fmt"
 	"github.com/Ankr-network/ankr-protocol/shared/types"
 )
 
@@ -36,7 +35,10 @@ func (s *Service) GetRecentTxs(ctx context.Context, req *types.GetRecentTxsReque
 	} else if req.Limit > MaxRecentTxLimit {
 		req.Limit = MaxRecentTxLimit
 	}
-	txs, err := s.databaseService.GetRecentTxs(ctx, fmt.Sprintf("%d", req.FromTx), req.Limit)
+	//if req.FromTs == 0 {
+	//	req.FromTs = uint64(time.Unix(0,0))
+	//}
+	txs, err := s.databaseService.GetRecentTxs(ctx, int64(req.FromTs), req.Limit)
 	return &types.GetRecentTxsReply{Txs: txs}, err
 }
 
