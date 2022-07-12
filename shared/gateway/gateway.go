@@ -3,6 +3,7 @@ package gateway
 import (
 	"context"
 	"github.com/Ankr-network/ankr-protocol/shared/types"
+	"time"
 )
 
 func checkHasMore(limit uint32, length int) (int, bool) {
@@ -35,9 +36,9 @@ func (s *Service) GetRecentTxs(ctx context.Context, req *types.GetRecentTxsReque
 	} else if req.Limit > MaxRecentTxLimit {
 		req.Limit = MaxRecentTxLimit
 	}
-	//if req.FromTs == 0 {
-	//	req.FromTs = uint64(time.Unix(0,0))
-	//}
+	if req.FromTs == 0 {
+		req.FromTs = uint64(time.Now().Unix())
+	}
 	txs, err := s.databaseService.GetRecentTxs(ctx, int64(req.FromTs), req.Limit)
 	return &types.GetRecentTxsReply{Txs: txs}, err
 }
