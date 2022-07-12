@@ -23,7 +23,7 @@ var _ = math.Inf
 const _ = proto.ProtoPackageIsVersion3 // please upgrade the proto package
 
 type Block struct {
-	BlockHash            []byte   `protobuf:"bytes,1,opt,name=block_hash,json=blockHash,proto3" json:"block_hash,omitempty"`
+	BlockHash            string   `protobuf:"bytes,1,opt,name=block_hash,json=blockHash,proto3" json:"block_hash,omitempty"`
 	BlockNumber          uint32   `protobuf:"varint,2,opt,name=block_number,json=blockNumber,proto3" json:"block_number,omitempty"`
 	MinerHash            string   `protobuf:"bytes,3,opt,name=miner_hash,json=minerHash,proto3" json:"miner_hash,omitempty"`
 	Timestamp            uint64   `protobuf:"varint,4,opt,name=timestamp,proto3" json:"timestamp,omitempty"`
@@ -69,11 +69,11 @@ func (m *Block) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_Block proto.InternalMessageInfo
 
-func (m *Block) GetBlockHash() []byte {
+func (m *Block) GetBlockHash() string {
 	if m != nil {
 		return m.BlockHash
 	}
-	return nil
+	return ""
 }
 
 func (m *Block) GetBlockNumber() uint32 {
@@ -126,17 +126,18 @@ func (m *Block) GetTxsCount() uint32 {
 }
 
 type BlockDetails struct {
-	BlockHash            []byte   `protobuf:"bytes,1,opt,name=block_hash,json=blockHash,proto3" json:"block_hash,omitempty"`
-	BlockNumber          uint64   `protobuf:"varint,2,opt,name=block_number,json=blockNumber,proto3" json:"block_number,omitempty"`
-	Coinbase             []byte   `protobuf:"bytes,3,opt,name=coinbase,proto3" json:"coinbase,omitempty"`
-	Difficulty           uint64   `protobuf:"varint,4,opt,name=difficulty,proto3" json:"difficulty,omitempty"`
-	Nonce                []byte   `protobuf:"bytes,5,opt,name=nonce,proto3" json:"nonce,omitempty"`
-	ParentHash           []byte   `protobuf:"bytes,6,opt,name=parent_hash,json=parentHash,proto3" json:"parent_hash,omitempty"`
+	BlockHash            string   `protobuf:"bytes,1,opt,name=block_hash,json=blockHash,proto3" json:"block_hash,omitempty"`
+	BlockNumber          uint32   `protobuf:"varint,2,opt,name=block_number,json=blockNumber,proto3" json:"block_number,omitempty"`
+	GasLimit             uint64   `protobuf:"varint,3,opt,name=gas_limit,json=gasLimit,proto3" json:"gas_limit,omitempty"`
+	GasUsed              uint64   `protobuf:"varint,4,opt,name=gas_used,json=gasUsed,proto3" json:"gas_used,omitempty"`
+	MinerHash            string   `protobuf:"bytes,5,opt,name=miner_hash,json=minerHash,proto3" json:"miner_hash,omitempty"`
+	SizeBytes            uint32   `protobuf:"varint,6,opt,name=size_bytes,json=sizeBytes,proto3" json:"size_bytes,omitempty"`
 	Timestamp            uint64   `protobuf:"varint,7,opt,name=timestamp,proto3" json:"timestamp,omitempty"`
-	GasLimit             uint64   `protobuf:"varint,8,opt,name=gas_limit,json=gasLimit,proto3" json:"gas_limit,omitempty"`
-	GasUsed              uint64   `protobuf:"varint,9,opt,name=gas_used,json=gasUsed,proto3" json:"gas_used,omitempty"`
-	SizeBytes            uint32   `protobuf:"varint,10,opt,name=size_bytes,json=sizeBytes,proto3" json:"size_bytes,omitempty"`
-	TxsCount             uint32   `protobuf:"varint,11,opt,name=txs_count,json=txsCount,proto3" json:"txs_count,omitempty"`
+	TxsCount             uint32   `protobuf:"varint,8,opt,name=txs_count,json=txsCount,proto3" json:"txs_count,omitempty"`
+	ParentHash           string   `protobuf:"bytes,9,opt,name=parent_hash,json=parentHash,proto3" json:"parent_hash,omitempty"`
+	Difficulty           uint32   `protobuf:"varint,10,opt,name=difficulty,proto3" json:"difficulty,omitempty"`
+	TotalDifficulty      uint32   `protobuf:"varint,11,opt,name=total_difficulty,json=totalDifficulty,proto3" json:"total_difficulty,omitempty"`
+	Nonce                string   `protobuf:"bytes,12,opt,name=nonce,proto3" json:"nonce,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
 	XXX_sizecache        int32    `json:"-"`
@@ -175,51 +176,16 @@ func (m *BlockDetails) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_BlockDetails proto.InternalMessageInfo
 
-func (m *BlockDetails) GetBlockHash() []byte {
+func (m *BlockDetails) GetBlockHash() string {
 	if m != nil {
 		return m.BlockHash
 	}
-	return nil
+	return ""
 }
 
-func (m *BlockDetails) GetBlockNumber() uint64 {
+func (m *BlockDetails) GetBlockNumber() uint32 {
 	if m != nil {
 		return m.BlockNumber
-	}
-	return 0
-}
-
-func (m *BlockDetails) GetCoinbase() []byte {
-	if m != nil {
-		return m.Coinbase
-	}
-	return nil
-}
-
-func (m *BlockDetails) GetDifficulty() uint64 {
-	if m != nil {
-		return m.Difficulty
-	}
-	return 0
-}
-
-func (m *BlockDetails) GetNonce() []byte {
-	if m != nil {
-		return m.Nonce
-	}
-	return nil
-}
-
-func (m *BlockDetails) GetParentHash() []byte {
-	if m != nil {
-		return m.ParentHash
-	}
-	return nil
-}
-
-func (m *BlockDetails) GetTimestamp() uint64 {
-	if m != nil {
-		return m.Timestamp
 	}
 	return 0
 }
@@ -238,9 +204,23 @@ func (m *BlockDetails) GetGasUsed() uint64 {
 	return 0
 }
 
+func (m *BlockDetails) GetMinerHash() string {
+	if m != nil {
+		return m.MinerHash
+	}
+	return ""
+}
+
 func (m *BlockDetails) GetSizeBytes() uint32 {
 	if m != nil {
 		return m.SizeBytes
+	}
+	return 0
+}
+
+func (m *BlockDetails) GetTimestamp() uint64 {
+	if m != nil {
+		return m.Timestamp
 	}
 	return 0
 }
@@ -252,6 +232,34 @@ func (m *BlockDetails) GetTxsCount() uint32 {
 	return 0
 }
 
+func (m *BlockDetails) GetParentHash() string {
+	if m != nil {
+		return m.ParentHash
+	}
+	return ""
+}
+
+func (m *BlockDetails) GetDifficulty() uint32 {
+	if m != nil {
+		return m.Difficulty
+	}
+	return 0
+}
+
+func (m *BlockDetails) GetTotalDifficulty() uint32 {
+	if m != nil {
+		return m.TotalDifficulty
+	}
+	return 0
+}
+
+func (m *BlockDetails) GetNonce() string {
+	if m != nil {
+		return m.Nonce
+	}
+	return ""
+}
+
 func init() {
 	proto.RegisterType((*Block)(nil), "com.ankr.Block")
 	proto.RegisterType((*BlockDetails)(nil), "com.ankr.BlockDetails")
@@ -260,31 +268,32 @@ func init() {
 func init() { proto.RegisterFile("block.proto", fileDescriptor_8e550b1f5926e92d) }
 
 var fileDescriptor_8e550b1f5926e92d = []byte{
-	// 378 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x9c, 0x92, 0xbd, 0xce, 0xd3, 0x30,
-	0x14, 0x86, 0x71, 0xe9, 0x4f, 0x72, 0x1a, 0x18, 0xac, 0x0e, 0xe1, 0x2f, 0x84, 0x4e, 0x99, 0xda,
-	0x81, 0x91, 0x2d, 0x30, 0x30, 0x20, 0x84, 0x22, 0xb1, 0xb0, 0x44, 0x4e, 0xe2, 0x36, 0x56, 0x13,
-	0x27, 0xca, 0x71, 0xa4, 0x96, 0x2b, 0xe1, 0x92, 0x18, 0x59, 0xd8, 0x51, 0xb9, 0x0b, 0x26, 0xe4,
-	0x93, 0xef, 0xaf, 0xfa, 0xa4, 0x0c, 0xdf, 0x12, 0xf9, 0x3c, 0xaf, 0xf5, 0xc6, 0x7e, 0x64, 0x58,
-	0x66, 0x55, 0x93, 0x1f, 0x36, 0x6d, 0xd7, 0x98, 0x86, 0x3b, 0x79, 0x53, 0x6f, 0x84, 0x3e, 0x74,
-	0xeb, 0x7f, 0x0c, 0x66, 0xb1, 0x4d, 0xf8, 0x2b, 0x00, 0xda, 0x92, 0x96, 0x02, 0x4b, 0x9f, 0x85,
-	0x2c, 0xf2, 0x12, 0x97, 0xc8, 0x47, 0x81, 0x25, 0x7f, 0x03, 0xde, 0x10, 0xeb, 0xbe, 0xce, 0x64,
-	0xe7, 0x4f, 0x42, 0x16, 0x3d, 0x49, 0x86, 0xd6, 0xcf, 0x84, 0x6c, 0x43, 0xad, 0xb4, 0xec, 0x86,
-	0x86, 0xc7, 0x21, 0x8b, 0xdc, 0xc4, 0x25, 0x42, 0x0d, 0x2f, 0xc1, 0x35, 0xaa, 0x96, 0x68, 0x44,
-	0xdd, 0xfa, 0xd3, 0x90, 0x45, 0xd3, 0xe4, 0x16, 0xf0, 0x17, 0xe0, 0xee, 0x05, 0xa6, 0x95, 0xaa,
-	0x95, 0xf1, 0x67, 0x94, 0x3a, 0x7b, 0x81, 0x9f, 0xec, 0xcc, 0x9f, 0x81, 0x5d, 0xa7, 0x3d, 0xca,
-	0xc2, 0x9f, 0x53, 0xb6, 0xd8, 0x0b, 0xfc, 0x8a, 0xb2, 0xb0, 0x3f, 0x45, 0xf5, 0x5d, 0xa6, 0xd9,
-	0xc9, 0x48, 0xf4, 0x17, 0x74, 0x2a, 0xd7, 0x92, 0xd8, 0x02, 0x5b, 0x6b, 0x8e, 0x98, 0xe6, 0x4d,
-	0xaf, 0x8d, 0xef, 0x50, 0xea, 0x98, 0x23, 0xbe, 0xb7, 0xf3, 0xfa, 0xf7, 0x04, 0x3c, 0xba, 0xfc,
-	0x07, 0x69, 0x84, 0xaa, 0xf0, 0x21, 0x0e, 0xa6, 0x97, 0x0e, 0x9e, 0x83, 0x93, 0x37, 0x4a, 0x67,
-	0x02, 0x25, 0x19, 0xf0, 0x92, 0x9b, 0x99, 0x07, 0x00, 0x85, 0xda, 0xed, 0x54, 0xde, 0x57, 0xe6,
-	0x74, 0x65, 0xe0, 0x0e, 0xe1, 0x2b, 0x98, 0xe9, 0x46, 0xe7, 0x92, 0xae, 0xef, 0x25, 0xc3, 0xc0,
-	0x5f, 0xc3, 0xb2, 0x15, 0x9d, 0xd4, 0x66, 0x38, 0xd4, 0x9c, 0x32, 0x18, 0xd0, 0x7d, 0xaf, 0x8b,
-	0x51, 0xaf, 0xce, 0x88, 0x57, 0x77, 0xcc, 0x2b, 0x8c, 0x7a, 0x5d, 0x5e, 0x7a, 0x8d, 0xe3, 0x9f,
-	0xe7, 0x80, 0xfd, 0x3a, 0x07, 0xec, 0xcf, 0x39, 0x60, 0x3f, 0xfe, 0x06, 0x8f, 0xe0, 0xe9, 0xf5,
-	0x83, 0x1b, 0x1e, 0x60, 0x0c, 0xa4, 0xfd, 0x8b, 0x5d, 0x7f, 0x5b, 0x6d, 0xb6, 0x58, 0x8a, 0x4e,
-	0x16, 0x5b, 0x73, 0x6a, 0x25, 0xbe, 0xa3, 0x6f, 0x36, 0xa7, 0x8d, 0x6f, 0xff, 0x07, 0x00, 0x00,
-	0xff, 0xff, 0x6a, 0x3d, 0x8f, 0xfb, 0xb8, 0x02, 0x00, 0x00,
+	// 390 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xac, 0x52, 0xbb, 0x4e, 0xe3, 0x40,
+	0x14, 0xdd, 0xd9, 0xc4, 0x89, 0x7d, 0x93, 0x7d, 0xc8, 0x4a, 0x31, 0xab, 0xdd, 0x35, 0x21, 0x55,
+	0x68, 0x92, 0x82, 0x92, 0xce, 0xa4, 0xa0, 0x40, 0x08, 0x45, 0xa2, 0xa1, 0xb1, 0xc6, 0xf6, 0x24,
+	0x1e, 0xc5, 0x2f, 0x79, 0xc6, 0x52, 0x42, 0xcb, 0x4f, 0xf0, 0x49, 0x94, 0x7c, 0x02, 0x0a, 0x7f,
+	0x41, 0x85, 0xe6, 0x8e, 0x50, 0x1e, 0x3c, 0x2a, 0x1a, 0x6b, 0xee, 0xb9, 0xc7, 0xe7, 0xf8, 0x1c,
+	0x0f, 0x74, 0xc2, 0xb4, 0x88, 0x16, 0xa3, 0xb2, 0x2a, 0x54, 0xe1, 0xda, 0x51, 0x91, 0x8d, 0x58,
+	0xbe, 0xa8, 0x06, 0xcf, 0x04, 0x2c, 0x5f, 0x6f, 0xdc, 0xff, 0x00, 0x48, 0x09, 0x12, 0x26, 0x13,
+	0x4a, 0xfa, 0x64, 0xe8, 0x4c, 0x1d, 0x44, 0xce, 0x98, 0x4c, 0xdc, 0x43, 0xe8, 0x9a, 0x75, 0x5e,
+	0x67, 0x21, 0xaf, 0xe8, 0xf7, 0x3e, 0x19, 0xfe, 0x98, 0x1a, 0xd5, 0x0b, 0x84, 0xb4, 0x42, 0x26,
+	0x72, 0x5e, 0x19, 0x85, 0x86, 0x51, 0x40, 0x04, 0x15, 0xfe, 0x81, 0xa3, 0x44, 0xc6, 0xa5, 0x62,
+	0x59, 0x49, 0x9b, 0x7d, 0x32, 0x6c, 0x4e, 0x37, 0x80, 0xfb, 0x17, 0x9c, 0x39, 0x93, 0x41, 0x2a,
+	0x32, 0xa1, 0xa8, 0x85, 0x5b, 0x7b, 0xce, 0xe4, 0xb9, 0x9e, 0xdd, 0x3f, 0xa0, 0xcf, 0x41, 0x2d,
+	0x79, 0x4c, 0x5b, 0xb8, 0x6b, 0xcf, 0x99, 0xbc, 0x92, 0x3c, 0xd6, 0xa6, 0x52, 0xdc, 0xf0, 0x20,
+	0x5c, 0x29, 0x2e, 0x69, 0x1b, 0xbf, 0xca, 0xd1, 0x88, 0xaf, 0x01, 0x2d, 0xab, 0x96, 0x32, 0x88,
+	0x8a, 0x3a, 0x57, 0xd4, 0xc6, 0xad, 0xad, 0x96, 0xf2, 0x54, 0xcf, 0x83, 0xdb, 0x06, 0x74, 0x31,
+	0xfc, 0x84, 0x2b, 0x26, 0x52, 0xf9, 0x05, 0x1d, 0xec, 0xc4, 0x68, 0x7c, 0x12, 0xa3, 0xf9, 0x26,
+	0xc6, 0x56, 0x77, 0xd6, 0x7e, 0x77, 0xbb, 0x29, 0x5b, 0xfb, 0x29, 0x77, 0xaa, 0x6d, 0xbf, 0x53,
+	0xed, 0x87, 0x1d, 0xb8, 0x07, 0xd0, 0x29, 0x59, 0xc5, 0x73, 0x65, 0x9c, 0x1d, 0x74, 0x06, 0x03,
+	0xa1, 0xb5, 0x07, 0x10, 0x8b, 0xd9, 0x4c, 0x44, 0x75, 0xaa, 0x56, 0x14, 0xf0, 0xf5, 0x2d, 0xc4,
+	0x3d, 0x82, 0xdf, 0xaa, 0x50, 0x2c, 0x0d, 0xb6, 0x58, 0x1d, 0x64, 0xfd, 0x42, 0x7c, 0xb2, 0xa1,
+	0xf6, 0xc0, 0xca, 0x8b, 0x3c, 0xe2, 0xb4, 0x8b, 0x2e, 0x66, 0xf0, 0xfd, 0xfb, 0xb5, 0x47, 0x1e,
+	0xd6, 0x1e, 0x79, 0x5c, 0x7b, 0xe4, 0xee, 0xc9, 0xfb, 0x06, 0x3f, 0x5f, 0xaf, 0xa7, 0xb9, 0xae,
+	0x3e, 0xe0, 0x4f, 0xba, 0xd4, 0xe7, 0xeb, 0xde, 0x68, 0x2c, 0x13, 0x56, 0xf1, 0x78, 0xac, 0x56,
+	0x25, 0x97, 0x27, 0xf8, 0x0c, 0x5b, 0x48, 0x3c, 0x7e, 0x09, 0x00, 0x00, 0xff, 0xff, 0x45, 0x16,
+	0x74, 0x2b, 0xe6, 0x02, 0x00, 0x00,
 }
 
 func (m *Block) Marshal() (dAtA []byte, err error) {
@@ -382,23 +391,32 @@ func (m *BlockDetails) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 		i -= len(m.XXX_unrecognized)
 		copy(dAtA[i:], m.XXX_unrecognized)
 	}
-	if m.TxsCount != 0 {
-		i = encodeVarintBlock(dAtA, i, uint64(m.TxsCount))
+	if len(m.Nonce) > 0 {
+		i -= len(m.Nonce)
+		copy(dAtA[i:], m.Nonce)
+		i = encodeVarintBlock(dAtA, i, uint64(len(m.Nonce)))
+		i--
+		dAtA[i] = 0x62
+	}
+	if m.TotalDifficulty != 0 {
+		i = encodeVarintBlock(dAtA, i, uint64(m.TotalDifficulty))
 		i--
 		dAtA[i] = 0x58
 	}
-	if m.SizeBytes != 0 {
-		i = encodeVarintBlock(dAtA, i, uint64(m.SizeBytes))
+	if m.Difficulty != 0 {
+		i = encodeVarintBlock(dAtA, i, uint64(m.Difficulty))
 		i--
 		dAtA[i] = 0x50
 	}
-	if m.GasUsed != 0 {
-		i = encodeVarintBlock(dAtA, i, uint64(m.GasUsed))
+	if len(m.ParentHash) > 0 {
+		i -= len(m.ParentHash)
+		copy(dAtA[i:], m.ParentHash)
+		i = encodeVarintBlock(dAtA, i, uint64(len(m.ParentHash)))
 		i--
-		dAtA[i] = 0x48
+		dAtA[i] = 0x4a
 	}
-	if m.GasLimit != 0 {
-		i = encodeVarintBlock(dAtA, i, uint64(m.GasLimit))
+	if m.TxsCount != 0 {
+		i = encodeVarintBlock(dAtA, i, uint64(m.TxsCount))
 		i--
 		dAtA[i] = 0x40
 	}
@@ -407,31 +425,27 @@ func (m *BlockDetails) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 		i--
 		dAtA[i] = 0x38
 	}
-	if len(m.ParentHash) > 0 {
-		i -= len(m.ParentHash)
-		copy(dAtA[i:], m.ParentHash)
-		i = encodeVarintBlock(dAtA, i, uint64(len(m.ParentHash)))
+	if m.SizeBytes != 0 {
+		i = encodeVarintBlock(dAtA, i, uint64(m.SizeBytes))
 		i--
-		dAtA[i] = 0x32
+		dAtA[i] = 0x30
 	}
-	if len(m.Nonce) > 0 {
-		i -= len(m.Nonce)
-		copy(dAtA[i:], m.Nonce)
-		i = encodeVarintBlock(dAtA, i, uint64(len(m.Nonce)))
+	if len(m.MinerHash) > 0 {
+		i -= len(m.MinerHash)
+		copy(dAtA[i:], m.MinerHash)
+		i = encodeVarintBlock(dAtA, i, uint64(len(m.MinerHash)))
 		i--
 		dAtA[i] = 0x2a
 	}
-	if m.Difficulty != 0 {
-		i = encodeVarintBlock(dAtA, i, uint64(m.Difficulty))
+	if m.GasUsed != 0 {
+		i = encodeVarintBlock(dAtA, i, uint64(m.GasUsed))
 		i--
 		dAtA[i] = 0x20
 	}
-	if len(m.Coinbase) > 0 {
-		i -= len(m.Coinbase)
-		copy(dAtA[i:], m.Coinbase)
-		i = encodeVarintBlock(dAtA, i, uint64(len(m.Coinbase)))
+	if m.GasLimit != 0 {
+		i = encodeVarintBlock(dAtA, i, uint64(m.GasLimit))
 		i--
-		dAtA[i] = 0x1a
+		dAtA[i] = 0x18
 	}
 	if m.BlockNumber != 0 {
 		i = encodeVarintBlock(dAtA, i, uint64(m.BlockNumber))
@@ -510,35 +524,38 @@ func (m *BlockDetails) Size() (n int) {
 	if m.BlockNumber != 0 {
 		n += 1 + sovBlock(uint64(m.BlockNumber))
 	}
-	l = len(m.Coinbase)
-	if l > 0 {
-		n += 1 + l + sovBlock(uint64(l))
-	}
-	if m.Difficulty != 0 {
-		n += 1 + sovBlock(uint64(m.Difficulty))
-	}
-	l = len(m.Nonce)
-	if l > 0 {
-		n += 1 + l + sovBlock(uint64(l))
-	}
-	l = len(m.ParentHash)
-	if l > 0 {
-		n += 1 + l + sovBlock(uint64(l))
-	}
-	if m.Timestamp != 0 {
-		n += 1 + sovBlock(uint64(m.Timestamp))
-	}
 	if m.GasLimit != 0 {
 		n += 1 + sovBlock(uint64(m.GasLimit))
 	}
 	if m.GasUsed != 0 {
 		n += 1 + sovBlock(uint64(m.GasUsed))
 	}
+	l = len(m.MinerHash)
+	if l > 0 {
+		n += 1 + l + sovBlock(uint64(l))
+	}
 	if m.SizeBytes != 0 {
 		n += 1 + sovBlock(uint64(m.SizeBytes))
 	}
+	if m.Timestamp != 0 {
+		n += 1 + sovBlock(uint64(m.Timestamp))
+	}
 	if m.TxsCount != 0 {
 		n += 1 + sovBlock(uint64(m.TxsCount))
+	}
+	l = len(m.ParentHash)
+	if l > 0 {
+		n += 1 + l + sovBlock(uint64(l))
+	}
+	if m.Difficulty != 0 {
+		n += 1 + sovBlock(uint64(m.Difficulty))
+	}
+	if m.TotalDifficulty != 0 {
+		n += 1 + sovBlock(uint64(m.TotalDifficulty))
+	}
+	l = len(m.Nonce)
+	if l > 0 {
+		n += 1 + l + sovBlock(uint64(l))
 	}
 	if m.XXX_unrecognized != nil {
 		n += len(m.XXX_unrecognized)
@@ -585,7 +602,7 @@ func (m *Block) Unmarshal(dAtA []byte) error {
 			if wireType != 2 {
 				return fmt.Errorf("proto: wrong wireType = %d for field BlockHash", wireType)
 			}
-			var byteLen int
+			var stringLen uint64
 			for shift := uint(0); ; shift += 7 {
 				if shift >= 64 {
 					return ErrIntOverflowBlock
@@ -595,25 +612,23 @@ func (m *Block) Unmarshal(dAtA []byte) error {
 				}
 				b := dAtA[iNdEx]
 				iNdEx++
-				byteLen |= int(b&0x7F) << shift
+				stringLen |= uint64(b&0x7F) << shift
 				if b < 0x80 {
 					break
 				}
 			}
-			if byteLen < 0 {
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
 				return ErrInvalidLengthBlock
 			}
-			postIndex := iNdEx + byteLen
+			postIndex := iNdEx + intStringLen
 			if postIndex < 0 {
 				return ErrInvalidLengthBlock
 			}
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			m.BlockHash = append(m.BlockHash[:0], dAtA[iNdEx:postIndex]...)
-			if m.BlockHash == nil {
-				m.BlockHash = []byte{}
-			}
+			m.BlockHash = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
 		case 2:
 			if wireType != 0 {
@@ -816,7 +831,7 @@ func (m *BlockDetails) Unmarshal(dAtA []byte) error {
 			if wireType != 2 {
 				return fmt.Errorf("proto: wrong wireType = %d for field BlockHash", wireType)
 			}
-			var byteLen int
+			var stringLen uint64
 			for shift := uint(0); ; shift += 7 {
 				if shift >= 64 {
 					return ErrIntOverflowBlock
@@ -826,25 +841,23 @@ func (m *BlockDetails) Unmarshal(dAtA []byte) error {
 				}
 				b := dAtA[iNdEx]
 				iNdEx++
-				byteLen |= int(b&0x7F) << shift
+				stringLen |= uint64(b&0x7F) << shift
 				if b < 0x80 {
 					break
 				}
 			}
-			if byteLen < 0 {
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
 				return ErrInvalidLengthBlock
 			}
-			postIndex := iNdEx + byteLen
+			postIndex := iNdEx + intStringLen
 			if postIndex < 0 {
 				return ErrInvalidLengthBlock
 			}
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			m.BlockHash = append(m.BlockHash[:0], dAtA[iNdEx:postIndex]...)
-			if m.BlockHash == nil {
-				m.BlockHash = []byte{}
-			}
+			m.BlockHash = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
 		case 2:
 			if wireType != 0 {
@@ -860,16 +873,16 @@ func (m *BlockDetails) Unmarshal(dAtA []byte) error {
 				}
 				b := dAtA[iNdEx]
 				iNdEx++
-				m.BlockNumber |= uint64(b&0x7F) << shift
+				m.BlockNumber |= uint32(b&0x7F) << shift
 				if b < 0x80 {
 					break
 				}
 			}
 		case 3:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Coinbase", wireType)
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field GasLimit", wireType)
 			}
-			var byteLen int
+			m.GasLimit = 0
 			for shift := uint(0); ; shift += 7 {
 				if shift >= 64 {
 					return ErrIntOverflowBlock
@@ -879,31 +892,16 @@ func (m *BlockDetails) Unmarshal(dAtA []byte) error {
 				}
 				b := dAtA[iNdEx]
 				iNdEx++
-				byteLen |= int(b&0x7F) << shift
+				m.GasLimit |= uint64(b&0x7F) << shift
 				if b < 0x80 {
 					break
 				}
 			}
-			if byteLen < 0 {
-				return ErrInvalidLengthBlock
-			}
-			postIndex := iNdEx + byteLen
-			if postIndex < 0 {
-				return ErrInvalidLengthBlock
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.Coinbase = append(m.Coinbase[:0], dAtA[iNdEx:postIndex]...)
-			if m.Coinbase == nil {
-				m.Coinbase = []byte{}
-			}
-			iNdEx = postIndex
 		case 4:
 			if wireType != 0 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Difficulty", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field GasUsed", wireType)
 			}
-			m.Difficulty = 0
+			m.GasUsed = 0
 			for shift := uint(0); ; shift += 7 {
 				if shift >= 64 {
 					return ErrIntOverflowBlock
@@ -913,16 +911,16 @@ func (m *BlockDetails) Unmarshal(dAtA []byte) error {
 				}
 				b := dAtA[iNdEx]
 				iNdEx++
-				m.Difficulty |= uint64(b&0x7F) << shift
+				m.GasUsed |= uint64(b&0x7F) << shift
 				if b < 0x80 {
 					break
 				}
 			}
 		case 5:
 			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Nonce", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field MinerHash", wireType)
 			}
-			var byteLen int
+			var stringLen uint64
 			for shift := uint(0); ; shift += 7 {
 				if shift >= 64 {
 					return ErrIntOverflowBlock
@@ -932,31 +930,29 @@ func (m *BlockDetails) Unmarshal(dAtA []byte) error {
 				}
 				b := dAtA[iNdEx]
 				iNdEx++
-				byteLen |= int(b&0x7F) << shift
+				stringLen |= uint64(b&0x7F) << shift
 				if b < 0x80 {
 					break
 				}
 			}
-			if byteLen < 0 {
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
 				return ErrInvalidLengthBlock
 			}
-			postIndex := iNdEx + byteLen
+			postIndex := iNdEx + intStringLen
 			if postIndex < 0 {
 				return ErrInvalidLengthBlock
 			}
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			m.Nonce = append(m.Nonce[:0], dAtA[iNdEx:postIndex]...)
-			if m.Nonce == nil {
-				m.Nonce = []byte{}
-			}
+			m.MinerHash = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
 		case 6:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field ParentHash", wireType)
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field SizeBytes", wireType)
 			}
-			var byteLen int
+			m.SizeBytes = 0
 			for shift := uint(0); ; shift += 7 {
 				if shift >= 64 {
 					return ErrIntOverflowBlock
@@ -966,26 +962,11 @@ func (m *BlockDetails) Unmarshal(dAtA []byte) error {
 				}
 				b := dAtA[iNdEx]
 				iNdEx++
-				byteLen |= int(b&0x7F) << shift
+				m.SizeBytes |= uint32(b&0x7F) << shift
 				if b < 0x80 {
 					break
 				}
 			}
-			if byteLen < 0 {
-				return ErrInvalidLengthBlock
-			}
-			postIndex := iNdEx + byteLen
-			if postIndex < 0 {
-				return ErrInvalidLengthBlock
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.ParentHash = append(m.ParentHash[:0], dAtA[iNdEx:postIndex]...)
-			if m.ParentHash == nil {
-				m.ParentHash = []byte{}
-			}
-			iNdEx = postIndex
 		case 7:
 			if wireType != 0 {
 				return fmt.Errorf("proto: wrong wireType = %d for field Timestamp", wireType)
@@ -1007,63 +988,6 @@ func (m *BlockDetails) Unmarshal(dAtA []byte) error {
 			}
 		case 8:
 			if wireType != 0 {
-				return fmt.Errorf("proto: wrong wireType = %d for field GasLimit", wireType)
-			}
-			m.GasLimit = 0
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowBlock
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				m.GasLimit |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-		case 9:
-			if wireType != 0 {
-				return fmt.Errorf("proto: wrong wireType = %d for field GasUsed", wireType)
-			}
-			m.GasUsed = 0
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowBlock
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				m.GasUsed |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-		case 10:
-			if wireType != 0 {
-				return fmt.Errorf("proto: wrong wireType = %d for field SizeBytes", wireType)
-			}
-			m.SizeBytes = 0
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowBlock
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				m.SizeBytes |= uint32(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-		case 11:
-			if wireType != 0 {
 				return fmt.Errorf("proto: wrong wireType = %d for field TxsCount", wireType)
 			}
 			m.TxsCount = 0
@@ -1081,6 +1005,108 @@ func (m *BlockDetails) Unmarshal(dAtA []byte) error {
 					break
 				}
 			}
+		case 9:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field ParentHash", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowBlock
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthBlock
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthBlock
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.ParentHash = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 10:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Difficulty", wireType)
+			}
+			m.Difficulty = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowBlock
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.Difficulty |= uint32(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 11:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field TotalDifficulty", wireType)
+			}
+			m.TotalDifficulty = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowBlock
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.TotalDifficulty |= uint32(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 12:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Nonce", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowBlock
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthBlock
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthBlock
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Nonce = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
 		default:
 			iNdEx = preIndex
 			skippy, err := skipBlock(dAtA[iNdEx:])

@@ -41,7 +41,7 @@ func (s *Service) GetRecentTxs(ctx context.Context, req *types.GetRecentTxsReque
 }
 
 func (s *Service) GetBlockByHashOrNumber(ctx context.Context, req *types.GetBlockByHashOrNumberRequest) (*types.GetBlockByHashOrNumberReply, error) {
-	var block *types.Block
+	var block *types.BlockDetails
 	var err error
 	if len(req.Hash) > 0 {
 		block, err = s.databaseService.GetBlockByHash(ctx, req.Hash)

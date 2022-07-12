@@ -68,10 +68,10 @@ message GetRecentTxsReply {
 
 message GetBlockByHashOrNumberRequest {
   uint64 number = 1;
-  bytes hash = 2;
+  string hash = 2;
 }
 message GetBlockByHashOrNumberReply {
-  Block block = 1;
+  BlockDetails block = 1;
 }
 
 message GetTransactionByHashRequest {

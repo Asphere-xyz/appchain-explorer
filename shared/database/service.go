@@ -3,10 +3,12 @@ package database
 import (
 	"context"
 	"database/sql"
+	"encoding/hex"
 	"github.com/Ankr-network/ankr-protocol/shared"
 	"github.com/Ankr-network/ankr-protocol/shared/entity"
 	"github.com/Ankr-network/ankr-protocol/shared/types"
 	_ "github.com/jackc/pgx/v4/stdlib"
+	"strings"
 )
 
 type Service struct {
@@ -42,7 +44,7 @@ func (s *Service) GetRecentBlocks(ctx context.Context, fromBlock, limit uint64) 
 	}
 	result := blocksToProto(blocks)
 	for _, b := range result {
-		count, err := s.CountTxsInBlock(ctx, b)
+		count, err := s.CountTxsInBlock(ctx, int64(b.BlockNumber))
 		if err != nil {
 			return nil, err
 		}
@@ -66,24 +68,38 @@ func (s *Service) GetRecentTxs(ctx context.Context, fromTs string, limit uint64)
 	return result, err
 }
 
-func (s *Service) GetBlockByHash(ctx context.Context, blockHash []byte) (*types.Block, error) {
-	block, err := entity.BlockByHash(ctx, s.db, blockHash)
+func (s *Service) getBlockWithTxsCount(ctx context.Context, block *entity.Block) (*types.BlockDetails, error) {
+	result := blockDetailsToProto(block)
+	count, err := s.CountTxsInBlock(ctx, int64(result.BlockNumber))
+	if err != nil {
+		return nil, err
+	}
+	result.TxsCount = uint32(count)
+	return result, nil
+}
+
+func (s *Service) GetBlockByHash(ctx context.Context, blockHash string) (*types.BlockDetails, error) {
+	hashBytes, err := hex.DecodeString(strings.TrimPrefix(blockHash, "0x"))
+	if err != nil {
+		return nil, err
+	}
+	block, err := entity.BlockByHash(ctx, s.db, hashBytes)
 	if err == sql.ErrNoRows {
 		return nil, nil
 	}
-	return blockToProto(block), err
+	return s.getBlockWithTxsCount(ctx, block)
 }
 
-func (s *Service) GetBlockByNumber(ctx context.Context, blockNumber uint64) (*types.Block, error) {
+func (s *Service) GetBlockByNumber(ctx context.Context, blockNumber uint64) (*types.BlockDetails, error) {
 	block, err := entity.BlockByNumber(ctx, s.db, int64(blockNumber))
 	if err == sql.ErrNoRows {
 		return nil, nil
 	}
-	return blockToProto(block), err
+	return s.getBlockWithTxsCount(ctx, block)
 }
 
-func (s *Service) CountTxsInBlock(ctx context.Context, block *types.Block) (int, error) {
-	txs, err := entity.TransactionsByBlockNumber(ctx, s.db, sql.NullInt64{Int64: int64(block.BlockNumber), Valid: true})
+func (s *Service) CountTxsInBlock(ctx context.Context, blockNumber int64) (int, error) {
+	txs, err := entity.TransactionsByBlockNumber(ctx, s.db, sql.NullInt64{Int64: blockNumber, Valid: true})
 	return len(txs), err
 }
 

@@ -19,13 +19,32 @@ func blockToProto(block *entity.Block) *types.Block {
 		return nil
 	}
 	return &types.Block{
-		BlockHash:   block.Hash,
+		BlockHash:   fmt.Sprintf("0x%x", block.Hash),
 		BlockNumber: uint32(block.Number),
 		MinerHash:   fmt.Sprintf("0x%x", block.MinerHash),
 		Timestamp:   uint64(block.Timestamp.Unix()),
 		GasLimit:    uint64(block.GasLimit),
 		GasUsed:     uint64(block.GasUsed),
 		SizeBytes:   uint32(block.Size.Int64),
+	}
+}
+
+func blockDetailsToProto(block *entity.Block) *types.BlockDetails {
+	if block == nil {
+		return nil
+	}
+	return &types.BlockDetails{
+		BlockHash:       fmt.Sprintf("0x%x", block.Hash),
+		BlockNumber:     uint32(block.Number),
+		MinerHash:       fmt.Sprintf("0x%x", block.MinerHash),
+		Timestamp:       uint64(block.Timestamp.Unix()),
+		GasLimit:        uint64(block.GasLimit),
+		GasUsed:         uint64(block.GasUsed),
+		SizeBytes:       uint32(block.Size.Int64),
+		ParentHash:      fmt.Sprintf("0x%x", block.ParentHash),
+		Difficulty:      uint32(block.Difficulty.Float64),
+		TotalDifficulty: uint32(block.TotalDifficulty.Float64),
+		Nonce:           fmt.Sprintf("0x%x", block.Nonce),
 	}
 }
 
