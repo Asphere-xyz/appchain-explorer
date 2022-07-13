@@ -6,6 +6,8 @@ http:
       get: /v1alpha/block
     - selector: com.ankr.BlockscoutGateway.GetRecentTxs
       get: /v1alpha/tx
+    - selector: com.ankr.BlockscoutGateway.GetAddress
+      get: /v1alpha/address/{hash}
     - selector: com.ankr.BlockscoutGateway.GetBlockByHashOrNumber
       get: /v1alpha/block/{number}
       additional_bindings:

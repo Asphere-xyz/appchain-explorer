@@ -30,3 +30,8 @@ WHERE %%ts string%% <= updated_at
 ORDER BY "updated_at" DESC
 LIMIT %%limit uint64%%
 ENDSQL
+
+xo query "$PG_URL" --append --trim --strip -o shared/entity -T AddressTokenBalance <<ENDSQL
+SELECT * FROM "address_token_balances"
+WHERE address_hash = %%hash string%%
+ENDSQL

@@ -1,0 +1,17 @@
+syntax = "proto3";
+
+option java_package = "com.ankr.proto";
+option java_outer_classname = "AddressProto";
+
+option go_package = "./shared/types;types";
+
+package com.ankr;
+
+message Address {
+  string hash = 1;
+  uint64 balance = 2;
+  uint32 tokens = 3;
+  uint32 transactions = 4;
+  uint64 gas_used = 5;
+  uint32 blocks_validated = 6;
+}

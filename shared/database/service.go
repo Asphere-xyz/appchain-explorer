@@ -118,3 +118,42 @@ func (s *Service) GetTokenTransfers(ctx context.Context, tokenContract []byte, b
 	result := tokenTransfersToProto(transfers)
 	return result, err
 }
+
+func (s *Service) getTokensForAddress(ctx context.Context, hash []byte) ([]*entity.AddressTokenBalance, error) {
+	tokens, err := entity.AddressTokenBalancesByHash(ctx, s.db, hash)
+	if err == sql.ErrNoRows {
+		return nil, nil
+	}
+	return tokens, err
+}
+
+func (s *Service) getBlockValidatedByAddress(ctx context.Context, hash []byte) ([]*entity.Block, error) {
+	tokens, err := entity.BlocksByMinerHash(ctx, s.db, hash)
+	if err == sql.ErrNoRows {
+		return nil, nil
+	}
+	return tokens, err
+}
+
+func (s *Service) GetAddress(ctx context.Context, hash string) (*types.Address, error) {
+	hashBytes, err := hex.DecodeString(strings.TrimPrefix(hash, "0x"))
+	if err != nil {
+		return nil, err
+	}
+	addressInfo, err := entity.AddressByHash(ctx, s.db, hashBytes)
+	if err == sql.ErrNoRows {
+		return nil, nil
+	}
+	result := addressToProto(addressInfo)
+	tokens, err := s.getTokensForAddress(ctx, hashBytes)
+	if err != nil {
+		return nil, err
+	}
+	validatedBlocks, err := s.getBlockValidatedByAddress(ctx, hashBytes)
+	if err != nil {
+		return nil, err
+	}
+	result.Tokens = uint32(len(tokens))
+	result.BlocksValidated = uint32(len(validatedBlocks))
+	return result, nil
+}

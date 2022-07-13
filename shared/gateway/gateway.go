@@ -65,3 +65,10 @@ func (s *Service) GetTokenTransfers(ctx context.Context, req *types.GetTokenTran
 		Transfers: transfers,
 	}, err
 }
+
+func (s *Service) GetAddress(ctx context.Context, req *types.GetAddressRequest) (*types.GetAddressReply, error) {
+	address, err := s.databaseService.GetAddress(ctx, req.Hash)
+	return &types.GetAddressReply{
+		Address: address,
+	}, err
+}

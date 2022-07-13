@@ -342,3 +342,31 @@ func (atb *AddressTokenBalance) Address(ctx context.Context, db DB) (*Address, e
 func (atb *AddressTokenBalance) Token(ctx context.Context, db DB) (*Token, error) {
 	return TokenByContractAddressHash(ctx, db, atb.TokenContractAddressHash)
 }
+
+// AddressTokenBalancesByHash runs a custom query, returning results as AddressTokenBalance.
+func AddressTokenBalancesByHash(ctx context.Context, db DB, hash []byte) ([]*AddressTokenBalance, error) {
+	// query
+	const sqlstr = `SELECT * FROM "address_token_balances" ` +
+		`WHERE address_hash = $1`
+	// run
+	logf(sqlstr, hash)
+	rows, err := db.QueryContext(ctx, sqlstr, hash)
+	if err != nil {
+		return nil, logerror(err)
+	}
+	defer rows.Close()
+	// load results
+	var res []*AddressTokenBalance
+	for rows.Next() {
+		var atb AddressTokenBalance
+		// scan
+		if err := rows.Scan(&atb.ID, &atb.AddressHash, &atb.BlockNumber, &atb.TokenContractAddressHash, &atb.Value, &atb.ValueFetchedAt, &atb.InsertedAt, &atb.UpdatedAt, &atb.TokenID, &atb.TokenType); err != nil {
+			return nil, logerror(err)
+		}
+		res = append(res, &atb)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, logerror(err)
+	}
+	return res, nil
+}

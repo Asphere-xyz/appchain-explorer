@@ -10,6 +10,7 @@ package com.ankr;
 import "block.proto";
 import "transaction.proto";
 import "token_transfer.proto";
+import "address.proto";
 import "google/api/annotations.proto";
 
 /**
@@ -31,6 +32,11 @@ service BlockscoutGateway {
   rpc GetRecentTxs(GetRecentTxsRequest) returns (GetRecentTxsReply) {
     option (google.api.http) = {
       get: "/v1alpha/tx"
+    };
+  }
+  rpc GetAddress(GetAddressRequest) returns (GetAddressReply) {
+    option (google.api.http) = {
+      get: "/v1alpha/address/{hash}"
     };
   }
   rpc GetBlockByHashOrNumber(GetBlockByHashOrNumberRequest) returns (GetBlockByHashOrNumberReply) {
@@ -64,6 +70,13 @@ message GetRecentTxsRequest {
 }
 message GetRecentTxsReply {
   repeated Transaction txs = 1;
+}
+
+message GetAddressRequest {
+  string hash = 1;
+}
+message GetAddressReply {
+  Address address = 1;
 }
 
 message GetBlockByHashOrNumberRequest {
