@@ -12,25 +12,62 @@ enum TransactionStatus {
   SUCCESS = 1;
 }
 
+enum TransactionType {
+  CONTRACT_CALL = 0;
+  TRANSFER = 1;
+  UNKNOWN = 2;
+}
+
+message CallArg {
+  string name = 1;
+  string type = 2;
+  string data = 3;
+}
+
+message TransactionTokenTransfer {
+  bytes address_from = 1;
+  bytes address_to = 2;
+  bytes token_contract = 3;
+  uint64 amount = 5;
+  string symbol = 6;
+  uint64 decimal = 7;
+}
+
 message Transaction {
-  bytes tx_hash = 1;
+  string tx_hash = 1;
   TransactionStatus status = 2;
-  uint64 gas = 3;
-  uint64 cumulative_gas_used = 4;
-  uint64 gas_used = 5;
-  uint64 gas_price = 6;
-  uint64 tx_index = 7;
-  bytes input = 8;
-  uint64 nonce = 9;
-  string value = 10;
-  string error = 11;
-  bytes block_hash = 12;
-  uint64 block_number = 13;
-  bytes sender = 14;
-  bytes recipient = 15;
-  bytes contract = 16;
-  string revert_reason = 17;
-  uint32 type = 18;
-  bool internal_failed = 19;
-  uint32 timestamp = 20;
+  string value = 3;
+  string tx_fee = 4;
+  uint64 block_number = 5;
+  uint32 timestamp = 6;
+  string error = 7;
+  string sender = 8;
+  string recipient = 9;
+  string method_name = 10;
+  TransactionType tx_type = 11;
+}
+
+message TransactionDetails {
+  string tx_hash = 1;
+  TransactionStatus status = 2;
+  string error = 3;
+  uint32 block_number = 4;
+  uint64 timestamp = 5;
+  uint64 confirmed_at = 6;
+  string sender = 7;
+  string recipient = 8;
+  string value = 9;
+  string tx_fee = 10;
+  uint64 gas_price = 11;
+  uint64 gas_limit = 12;
+  uint64 gas_used = 13;
+  uint32 type = 14;
+  uint64 nonce = 15;
+  uint32 index = 16;
+  string method_id = 17;
+  string method_name = 18;
+  string signature = 19;
+  string raw_input = 20;
+  repeated TransactionTokenTransfer token_transfers = 21;
+  repeated CallArg args = 22;
 }

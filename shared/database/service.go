@@ -58,7 +58,6 @@ func (s *Service) GetRecentTxs(ctx context.Context, timestamp int64, limit uint6
 	var txs []*entity.Transaction
 	var err error
 	from := time.Unix(timestamp, 0)
-	//.Format("2006–01-02 15:04:03")
 	txs, err = entity.TransactionsByTsLimit(ctx, s.db, from, limit)
 	if err != nil {
 		return nil, err
@@ -102,12 +101,12 @@ func (s *Service) CountTxsInBlock(ctx context.Context, blockNumber int64) (int, 
 	return len(txs), err
 }
 
-func (s *Service) GetTransactionByHash(ctx context.Context, txHash []byte) (*types.Transaction, error) {
+func (s *Service) GetTransactionByHash(ctx context.Context, txHash []byte) (*types.TransactionDetails, error) {
 	tx, err := entity.TransactionByHash(ctx, s.db, txHash)
 	if err == sql.ErrNoRows {
 		return nil, nil
 	}
-	return txToProto(tx), err
+	return txDetailsToProto(tx), err
 }
 
 func (s *Service) GetTokenTransfers(ctx context.Context, tokenContract []byte, block uint64, limit uint64) ([]*types.TokenTransfer, error) {

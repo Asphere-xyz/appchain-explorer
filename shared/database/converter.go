@@ -59,27 +59,49 @@ func txToProto(tx *entity.Transaction) *types.Transaction {
 	if tx == nil {
 		return nil
 	}
+	txType := types.TransactionType_UNKNOWN
+	if tx.Input != nil {
+		txType = types.TransactionType_CONTRACT_CALL
+	}
 	return &types.Transaction{
-		TxHash:            tx.Hash,
-		Status:            types.TransactionStatus(tx.Status.Int64),
-		Gas:               uint64(tx.Gas),
-		CumulativeGasUsed: uint64(tx.CumulativeGasUsed.Float64),
-		GasUsed:           uint64(tx.GasUsed.Float64),
-		GasPrice:          uint64(tx.GasPrice),
-		TxIndex:           uint64(tx.Index.Int64),
-		Input:             tx.Input,
-		Nonce:             uint64(tx.Nonce),
-		Value:             strconv.FormatFloat(tx.Value, 'f', 18, 64),
-		Error:             tx.Error.String,
-		BlockHash:         tx.BlockHash,
-		BlockNumber:       uint64(tx.BlockNumber.Int64),
-		Sender:            tx.FromAddressHash,
-		Recipient:         tx.ToAddressHash,
-		Contract:          tx.CreatedContractAddressHash,
-		RevertReason:      tx.RevertReason.String,
-		Type:              uint32(tx.Type.Int64),
-		InternalFailed:    tx.HasErrorInInternalTxs.Bool,
-		Timestamp:         uint32(tx.UpdatedAt.Unix()),
+		TxHash:      fmt.Sprintf("0x%x", tx.Hash),
+		Status:      types.TransactionStatus(tx.Status.Int64),
+		Value:       strconv.FormatFloat(tx.Value/1e18, 'f', 18, 64),
+		TxFee:       strconv.FormatFloat(tx.GasUsed.Float64*tx.GasPrice/1e18, 'f', 18, 64),
+		BlockNumber: uint64(tx.BlockNumber.Int64),
+		Timestamp:   uint32(tx.UpdatedAt.Unix()),
+		Error:       tx.Error.String,
+		Sender:      fmt.Sprintf("0x%x", tx.FromAddressHash),
+		Recipient:   fmt.Sprintf("0x%x", tx.ToAddressHash),
+		TxType:      txType,
+	}
+}
+
+func txDetailsToProto(tx *entity.Transaction) *types.TransactionDetails {
+	if tx == nil {
+		return nil
+	}
+	return &types.TransactionDetails{
+		TxHash: fmt.Sprintf("0x%x", tx.Hash),
+		Status: types.TransactionStatus(tx.Status.Int64),
+		//Gas:               uint64(tx.Gas),
+		//CumulativeGasUsed: uint64(tx.CumulativeGasUsed.Float64),
+		GasUsed:  uint64(tx.GasUsed.Float64),
+		GasPrice: uint64(tx.GasPrice),
+		//TxIndex:           uint64(tx.Index.Int64),
+		//Input:             tx.Input,
+		Nonce: uint64(tx.Nonce),
+		Value: strconv.FormatFloat(tx.Value, 'f', 18, 64),
+		Error: tx.Error.String,
+		//BlockHash:         tx.BlockHash,
+		//BlockNumber:       uint64(tx.BlockNumber.Int64),
+		Sender:    fmt.Sprintf("0x%x", tx.FromAddressHash),
+		Recipient: fmt.Sprintf("0x%x", tx.ToAddressHash),
+		//Contract:          tx.CreatedContractAddressHash,
+		//RevertReason:      tx.RevertReason.String,
+		Type: uint32(tx.Type.Int64),
+		//InternalFailed:    tx.HasErrorInInternalTxs.Bool,
+		Timestamp: uint64(tx.UpdatedAt.Unix()),
 	}
 }
 
