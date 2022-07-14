@@ -63,6 +63,50 @@ func (s *Service) GetRecentTxs(ctx context.Context, timestamp int64, limit uint6
 		return nil, err
 	}
 	result := txsToProto(txs)
+	for i, tx := range txs {
+		transfers, err := s.getTokenTransfersForTx(ctx, tx.Hash)
+		if err != nil {
+			return nil, err
+		}
+		tokens := make([]*entity.Token, len(transfers))
+		for k, transfer := range transfers {
+			token, err := entity.TokenByContractAddressHash(ctx, s.db, transfer.TokenContractAddressHash)
+			if err != nil {
+				return nil, err
+			}
+			tokens[k] = token
+		}
+		result[i].TokenTransfers = tokenTransfersToProto(transfers, tokens)
+	}
+
+	return result, err
+}
+
+func (s *Service) GetTransactionByHash(ctx context.Context, txHash string) (*types.TransactionDetails, error) {
+	hashBytes, err := hex.DecodeString(strings.TrimPrefix(txHash, "0x"))
+	if err != nil {
+		return nil, err
+	}
+	tx, err := entity.TransactionByHash(ctx, s.db, hashBytes)
+	if err == sql.ErrNoRows {
+		return nil, nil
+	}
+	result := txDetailsToProto(tx)
+	transfers, err := s.getTokenTransfersForTx(ctx, tx.Hash)
+	if err != nil {
+		return nil, err
+	}
+	tokens := make([]*entity.Token, len(transfers))
+	for k, transfer := range transfers {
+		token, err := entity.TokenByContractAddressHash(ctx, s.db, transfer.TokenContractAddressHash)
+		if err != nil {
+			return nil, err
+		}
+		tokens[k] = token
+	}
+	result.TokenTransfers = tokenTransfersToProto(transfers, tokens)
+
+	//Try extract signature, methodname and args
 	return result, err
 }
 
@@ -101,21 +145,22 @@ func (s *Service) CountTxsInBlock(ctx context.Context, blockNumber int64) (int, 
 	return len(txs), err
 }
 
-func (s *Service) GetTransactionByHash(ctx context.Context, txHash []byte) (*types.TransactionDetails, error) {
-	tx, err := entity.TransactionByHash(ctx, s.db, txHash)
+func (s *Service) getTokenTransfersForTx(ctx context.Context, hash []byte) ([]*entity.TokenTransfer, error) {
+	transfers, err := entity.TokenTransfersByHash(ctx, s.db, hash)
 	if err == sql.ErrNoRows {
 		return nil, nil
 	}
-	return txDetailsToProto(tx), err
+	return transfers, err
 }
 
 func (s *Service) GetTokenTransfers(ctx context.Context, tokenContract []byte, block uint64, limit uint64) ([]*types.TokenTransfer, error) {
-	transfers, err := entity.TokenTransfersByBlockNumber(ctx, s.db, sql.NullInt64{Int64: int64(block)})
-	if err == sql.ErrNoRows {
-		return nil, nil
-	}
-	result := tokenTransfersToProto(transfers)
-	return result, err
+	//transfers, err := entity.TokenTransfersByBlockNumber(ctx, s.db, sql.NullInt64{Int64: int64(block)})
+	//if err == sql.ErrNoRows {
+	//	return nil, nil
+	//}
+	//result := tokenTransfersToProto(transfers)
+	//return result, err
+	return nil, nil
 }
 
 func (s *Service) getTokensForAddress(ctx context.Context, hash []byte) ([]*entity.AddressTokenBalance, error) {

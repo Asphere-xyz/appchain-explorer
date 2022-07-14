@@ -33,5 +33,10 @@ ENDSQL
 
 xo query "$PG_URL" --append --trim --strip -o shared/entity -T AddressTokenBalance <<ENDSQL
 SELECT * FROM "address_token_balances"
-WHERE address_hash = %%hash string%%
+WHERE address_hash = %%hash []byte%%
+ENDSQL
+
+xo query "$PG_URL" --append --trim --strip -o shared/entity -T TokenTransfer <<ENDSQL
+SELECT * FROM "token_transfers"
+WHERE transaction_hash = %%hash []byte%%
 ENDSQL

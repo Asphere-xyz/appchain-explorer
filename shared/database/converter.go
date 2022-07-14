@@ -68,7 +68,7 @@ func txToProto(tx *entity.Transaction) *types.Transaction {
 		Status:      types.TransactionStatus(tx.Status.Int64),
 		Value:       strconv.FormatFloat(tx.Value/1e18, 'f', 18, 64),
 		TxFee:       strconv.FormatFloat(tx.GasUsed.Float64*tx.GasPrice/1e18, 'f', 18, 64),
-		BlockNumber: uint64(tx.BlockNumber.Int64),
+		BlockNumber: uint32(tx.BlockNumber.Int64),
 		Timestamp:   uint32(tx.UpdatedAt.Unix()),
 		Error:       tx.Error.String,
 		Sender:      fmt.Sprintf("0x%x", tx.FromAddressHash),
@@ -82,47 +82,48 @@ func txDetailsToProto(tx *entity.Transaction) *types.TransactionDetails {
 		return nil
 	}
 	return &types.TransactionDetails{
-		TxHash: fmt.Sprintf("0x%x", tx.Hash),
-		Status: types.TransactionStatus(tx.Status.Int64),
-		//Gas:               uint64(tx.Gas),
-		//CumulativeGasUsed: uint64(tx.CumulativeGasUsed.Float64),
-		GasUsed:  uint64(tx.GasUsed.Float64),
-		GasPrice: uint64(tx.GasPrice),
-		//TxIndex:           uint64(tx.Index.Int64),
-		//Input:             tx.Input,
-		Nonce: uint64(tx.Nonce),
-		Value: strconv.FormatFloat(tx.Value, 'f', 18, 64),
-		Error: tx.Error.String,
-		//BlockHash:         tx.BlockHash,
-		//BlockNumber:       uint64(tx.BlockNumber.Int64),
-		Sender:    fmt.Sprintf("0x%x", tx.FromAddressHash),
-		Recipient: fmt.Sprintf("0x%x", tx.ToAddressHash),
-		//Contract:          tx.CreatedContractAddressHash,
-		//RevertReason:      tx.RevertReason.String,
-		Type: uint32(tx.Type.Int64),
-		//InternalFailed:    tx.HasErrorInInternalTxs.Bool,
-		Timestamp: uint64(tx.UpdatedAt.Unix()),
+		TxHash:      fmt.Sprintf("0x%x", tx.Hash),
+		Status:      types.TransactionStatus(tx.Status.Int64),
+		Error:       tx.Error.String,
+		BlockNumber: uint32(tx.BlockNumber.Int64),
+		CreatedAt:   uint32(tx.InsertedAt.Unix()),
+		ConfirmedAt: uint32(tx.UpdatedAt.Unix()),
+		Sender:      fmt.Sprintf("0x%x", tx.FromAddressHash),
+		Recipient:   fmt.Sprintf("0x%x", tx.ToAddressHash),
+		Value:       strconv.FormatFloat(tx.Value/1e18, 'f', 18, 64),
+		TxFee:       strconv.FormatFloat(tx.GasUsed.Float64*tx.GasPrice/1e18, 'f', 18, 64),
+		GasPrice:    uint64(tx.GasPrice),
+		GasLimit:    uint64(tx.Gas),
+		GasUsed:     uint64(tx.GasUsed.Float64),
+		Type:        uint32(tx.Type.Int64),
+		Nonce:       uint64(tx.Nonce),
+		Index:       uint32(tx.Index.Int64),
+		MethodId:    fmt.Sprintf("0x%x", tx.Input[0:4]),
+		RawInput:    fmt.Sprintf("0x%x", tx.Input),
 	}
 }
 
-func tokenTransferToProto(transfer *entity.TokenTransfer) *types.TokenTransfer {
+func tokenTransferToProto(transfer *entity.TokenTransfer, token *entity.Token) *types.TokenTransfer {
 	if transfer == nil {
 		return nil
 	}
+	symbol := ""
+	if token.Symbol.Valid {
+		symbol = token.Symbol.String
+	}
 	return &types.TokenTransfer{
-		TxHash:        transfer.TransactionHash,
-		AddressFrom:   transfer.FromAddressHash,
-		AddressTo:     transfer.ToAddressHash,
-		TokenContract: transfer.TokenContractAddressHash,
+		AddressFrom:   fmt.Sprintf("0x%x", transfer.FromAddressHash),
+		AddressTo:     fmt.Sprintf("0x%x", transfer.ToAddressHash),
+		TokenContract: fmt.Sprintf("0x%x", transfer.TokenContractAddressHash),
 		Amount:        uint64(transfer.Amount.Float64),
-		BlockNumber:   uint64(transfer.BlockNumber.Int64),
-		Timestamp:     uint64(transfer.UpdatedAt.Unix()),
+		Symbol:        symbol,
+		Decimals:      uint64(token.Decimals.Float64),
 	}
 }
 
-func tokenTransfersToProto(transfers []*entity.TokenTransfer) (result []*types.TokenTransfer) {
-	for _, b := range transfers {
-		result = append(result, tokenTransferToProto(b))
+func tokenTransfersToProto(transfers []*entity.TokenTransfer, tokens []*entity.Token) (result []*types.TokenTransfer) {
+	for i, b := range transfers {
+		result = append(result, tokenTransferToProto(b, tokens[i]))
 	}
 	return
 }

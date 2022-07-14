@@ -589,7 +589,7 @@ func request_BlockscoutGateway_GetTransactionByHash_0(ctx context.Context, marsh
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "hash")
 	}
 
-	protoReq.Hash, err = runtime.Bytes(val)
+	protoReq.Hash, err = runtime.String(val)
 
 	if err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "hash", err)
@@ -616,7 +616,7 @@ func local_request_BlockscoutGateway_GetTransactionByHash_0(ctx context.Context,
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "hash")
 	}
 
-	protoReq.Hash, err = runtime.Bytes(val)
+	protoReq.Hash, err = runtime.String(val)
 
 	if err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "hash", err)
@@ -643,7 +643,7 @@ func request_BlockscoutGateway_GetTransactionByHash_1(ctx context.Context, marsh
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "hash")
 	}
 
-	protoReq.Hash, err = runtime.Bytes(val)
+	protoReq.Hash, err = runtime.String(val)
 
 	if err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "hash", err)
@@ -670,7 +670,7 @@ func local_request_BlockscoutGateway_GetTransactionByHash_1(ctx context.Context,
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "hash")
 	}
 
-	protoReq.Hash, err = runtime.Bytes(val)
+	protoReq.Hash, err = runtime.String(val)
 
 	if err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "hash", err)

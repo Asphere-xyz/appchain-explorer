@@ -88,7 +88,7 @@ message GetBlockByHashOrNumberReply {
 }
 
 message GetTransactionByHashRequest {
-  bytes hash = 1;
+  string hash = 1;
 }
 message GetTransactionByHashReply {
   TransactionDetails transaction = 1;

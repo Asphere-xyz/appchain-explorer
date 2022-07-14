@@ -7,6 +7,8 @@ option go_package = "./shared/types;types";
 
 package com.ankr;
 
+import "token_transfer.proto";
+
 enum TransactionStatus {
   REVERTED = 0;
   SUCCESS = 1;
@@ -24,27 +26,19 @@ message CallArg {
   string data = 3;
 }
 
-message TransactionTokenTransfer {
-  bytes address_from = 1;
-  bytes address_to = 2;
-  bytes token_contract = 3;
-  uint64 amount = 5;
-  string symbol = 6;
-  uint64 decimal = 7;
-}
-
 message Transaction {
   string tx_hash = 1;
   TransactionStatus status = 2;
   string value = 3;
   string tx_fee = 4;
-  uint64 block_number = 5;
+  uint32 block_number = 5;
   uint32 timestamp = 6;
   string error = 7;
   string sender = 8;
   string recipient = 9;
   string method_name = 10;
   TransactionType tx_type = 11;
+  repeated TokenTransfer token_transfers = 12;
 }
 
 message TransactionDetails {
@@ -52,8 +46,8 @@ message TransactionDetails {
   TransactionStatus status = 2;
   string error = 3;
   uint32 block_number = 4;
-  uint64 timestamp = 5;
-  uint64 confirmed_at = 6;
+  uint32 created_at = 5;
+  uint32 confirmed_at = 6;
   string sender = 7;
   string recipient = 8;
   string value = 9;
@@ -68,6 +62,6 @@ message TransactionDetails {
   string method_name = 18;
   string signature = 19;
   string raw_input = 20;
-  repeated TransactionTokenTransfer token_transfers = 21;
+  repeated TokenTransfer token_transfers = 21;
   repeated CallArg args = 22;
 }

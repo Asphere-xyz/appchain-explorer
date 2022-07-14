@@ -5,24 +5,25 @@ package entity
 import (
 	"context"
 	"database/sql"
+	"github.com/lib/pq"
 	"time"
 )
 
 // TokenTransfer represents a row from 'public.token_transfers'.
 type TokenTransfer struct {
-	TransactionHash          []byte            `json:"transaction_hash"`            // transaction_hash
-	LogIndex                 int               `json:"log_index"`                   // log_index
-	FromAddressHash          []byte            `json:"from_address_hash"`           // from_address_hash
-	ToAddressHash            []byte            `json:"to_address_hash"`             // to_address_hash
-	Amount                   sql.NullFloat64   `json:"amount"`                      // amount
-	TokenID                  sql.NullFloat64   `json:"token_id"`                    // token_id
-	TokenContractAddressHash []byte            `json:"token_contract_address_hash"` // token_contract_address_hash
-	InsertedAt               time.Time         `json:"inserted_at"`                 // inserted_at
-	UpdatedAt                time.Time         `json:"updated_at"`                  // updated_at
-	BlockNumber              sql.NullInt64     `json:"block_number"`                // block_number
-	BlockHash                []byte            `json:"block_hash"`                  // block_hash
-	Amounts                  []sql.NullFloat64 `json:"amounts"`                     // amounts
-	TokenIDs                 []sql.NullFloat64 `json:"token_ids"`                   // token_ids
+	TransactionHash          []byte          `json:"transaction_hash"`            // transaction_hash
+	LogIndex                 int             `json:"log_index"`                   // log_index
+	FromAddressHash          []byte          `json:"from_address_hash"`           // from_address_hash
+	ToAddressHash            []byte          `json:"to_address_hash"`             // to_address_hash
+	Amount                   sql.NullFloat64 `json:"amount"`                      // amount
+	TokenID                  sql.NullFloat64 `json:"token_id"`                    // token_id
+	TokenContractAddressHash []byte          `json:"token_contract_address_hash"` // token_contract_address_hash
+	InsertedAt               time.Time       `json:"inserted_at"`                 // inserted_at
+	UpdatedAt                time.Time       `json:"updated_at"`                  // updated_at
+	BlockNumber              sql.NullInt64   `json:"block_number"`                // block_number
+	BlockHash                []byte          `json:"block_hash"`                  // block_hash
+	Amounts                  pq.Float64Array `json:"amounts"`                     // amounts
+	TokenIDs                 pq.Float64Array `json:"token_ids"`                   // token_ids
 	// xo fields
 	_exists, _deleted bool
 }
@@ -481,4 +482,32 @@ func (tt *TokenTransfer) Address(ctx context.Context, db DB) (*Address, error) {
 // Generated from foreign key 'token_transfers_transaction_hash_fkey'.
 func (tt *TokenTransfer) Transaction(ctx context.Context, db DB) (*Transaction, error) {
 	return TransactionByHash(ctx, db, tt.TransactionHash)
+}
+
+// TokenTransfersByHash runs a custom query, returning results as TokenTransfer.
+func TokenTransfersByHash(ctx context.Context, db DB, hash []byte) ([]*TokenTransfer, error) {
+	// query
+	const sqlstr = `SELECT * FROM "token_transfers" ` +
+		`WHERE transaction_hash = $1`
+	// run
+	logf(sqlstr, hash)
+	rows, err := db.QueryContext(ctx, sqlstr, hash)
+	if err != nil {
+		return nil, logerror(err)
+	}
+	defer rows.Close()
+	// load results
+	var res []*TokenTransfer
+	for rows.Next() {
+		var tt TokenTransfer
+		// scan
+		if err := rows.Scan(&tt.TransactionHash, &tt.LogIndex, &tt.FromAddressHash, &tt.ToAddressHash, &tt.Amount, &tt.TokenID, &tt.TokenContractAddressHash, &tt.InsertedAt, &tt.UpdatedAt, &tt.BlockNumber, &tt.BlockHash, &tt.Amounts, &tt.TokenIDs); err != nil {
+			return nil, logerror(err)
+		}
+		res = append(res, &tt)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, logerror(err)
+	}
+	return res, nil
 }
