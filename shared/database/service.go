@@ -3,6 +3,7 @@ package database
 import (
 	"context"
 	"database/sql"
+	"encoding/binary"
 	"encoding/hex"
 	"github.com/Ankr-network/ankr-protocol/shared"
 	"github.com/Ankr-network/ankr-protocol/shared/entity"
@@ -107,6 +108,17 @@ func (s *Service) GetTransactionByHash(ctx context.Context, txHash string) (*typ
 	result.TokenTransfers = tokenTransfersToProto(transfers, tokens)
 
 	//Try extract signature, methodname and args
+	sig := tx.Input[0:4]
+	identifier := binary.LittleEndian.Uint32(sig)
+	methods, err := entity.ContractMethodsByIdentifier(ctx, s.db, identifier)
+	if err != nil {
+		return nil, err
+	}
+	if len(methods) > 0 {
+		methodSignature, args := argsToProto(methods[0], tx.Input)
+		result.Args = args
+		result.Signature = methodSignature
+	}
 	return result, err
 }
 
@@ -151,16 +163,6 @@ func (s *Service) getTokenTransfersForTx(ctx context.Context, hash []byte) ([]*e
 		return nil, nil
 	}
 	return transfers, err
-}
-
-func (s *Service) GetTokenTransfers(ctx context.Context, tokenContract []byte, block uint64, limit uint64) ([]*types.TokenTransfer, error) {
-	//transfers, err := entity.TokenTransfersByBlockNumber(ctx, s.db, sql.NullInt64{Int64: int64(block)})
-	//if err == sql.ErrNoRows {
-	//	return nil, nil
-	//}
-	//result := tokenTransfersToProto(transfers)
-	//return result, err
-	return nil, nil
 }
 
 func (s *Service) getTokensForAddress(ctx context.Context, hash []byte) ([]*entity.AddressTokenBalance, error) {

@@ -40,3 +40,8 @@ xo query "$PG_URL" --append --trim --strip -o shared/entity -T TokenTransfer <<E
 SELECT * FROM "token_transfers"
 WHERE transaction_hash = %%hash []byte%%
 ENDSQL
+
+xo query "$PG_URL" --append --trim --strip -o shared/entity -T ContractMethod <<ENDSQL
+SELECT * FROM "contract_methods"
+WHERE identifier = %%identifier uint32%%
+ENDSQL

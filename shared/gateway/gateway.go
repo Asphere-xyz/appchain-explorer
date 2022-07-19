@@ -59,13 +59,6 @@ func (s *Service) GetTransactionByHash(ctx context.Context, req *types.GetTransa
 	return &types.GetTransactionByHashReply{Transaction: tx}, err
 }
 
-func (s *Service) GetTokenTransfers(ctx context.Context, req *types.GetTokenTransfersRequest) (*types.GetTokenTransfersReply, error) {
-	transfers, err := s.databaseService.GetTokenTransfers(ctx, req.TokenContract, req.FromBlock, req.Limit)
-	return &types.GetTokenTransfersReply{
-		Transfers: transfers,
-	}, err
-}
-
 func (s *Service) GetAddress(ctx context.Context, req *types.GetAddressRequest) (*types.GetAddressReply, error) {
 	address, err := s.databaseService.GetAddress(ctx, req.Hash)
 	return &types.GetAddressReply{

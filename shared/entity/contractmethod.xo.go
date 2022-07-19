@@ -167,3 +167,31 @@ func ContractMethodByID(ctx context.Context, db DB, id int64) (*ContractMethod, 
 	}
 	return &cm, nil
 }
+
+// ContractMethodsByIdentifier runs a custom query, returning results as ContractMethod.
+func ContractMethodsByIdentifier(ctx context.Context, db DB, identifier uint32) ([]*ContractMethod, error) {
+	// query
+	const sqlstr = `SELECT * FROM "contract_methods" ` +
+		`WHERE identifier = $1`
+	// run
+	logf(sqlstr, identifier)
+	rows, err := db.QueryContext(ctx, sqlstr, identifier)
+	if err != nil {
+		return nil, logerror(err)
+	}
+	defer rows.Close()
+	// load results
+	var res []*ContractMethod
+	for rows.Next() {
+		var cm ContractMethod
+		// scan
+		if err := rows.Scan(&cm.ID, &cm.Identifier, &cm.Abi, &cm.Type, &cm.InsertedAt, &cm.UpdatedAt); err != nil {
+			return nil, logerror(err)
+		}
+		res = append(res, &cm)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, logerror(err)
+	}
+	return res, nil
+}

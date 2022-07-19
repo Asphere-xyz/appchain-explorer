@@ -1,9 +1,12 @@
 package database
 
 import (
+	"bytes"
 	"fmt"
 	"github.com/Ankr-network/ankr-protocol/shared/entity"
 	"github.com/Ankr-network/ankr-protocol/shared/types"
+	"github.com/ethereum/go-ethereum/accounts/abi"
+	log "github.com/sirupsen/logrus"
 	"strconv"
 )
 
@@ -138,4 +141,34 @@ func addressToProto(address *entity.Address) (result *types.Address) {
 		Transactions: uint32(address.TransactionsCount.Int64),
 		GasUsed:      uint64(address.GasUsed.Int64),
 	}
+}
+
+func argsToProto(contractMethod *entity.ContractMethod, raw []byte) (string, []*types.CallArg) {
+	if contractMethod == nil || len(raw) == 0 {
+		return "", nil
+	}
+	decodedABI, err := abi.JSON(bytes.NewReader(contractMethod.Abi))
+	if err != nil {
+		log.Printf("Failed to parse abi: %v", err)
+		return "", nil
+	}
+	method, err := decodedABI.MethodById(raw)
+	if err != nil {
+		log.Printf("Failed to decode method: %v", err)
+		return "", nil
+	}
+	values, err := method.Inputs.Unpack(raw)
+	if err != nil {
+		log.Printf("Failed to unpack values: %v", err)
+		return "", nil
+	}
+	inputs := make([]*types.CallArg, len(method.Inputs))
+	for i, arg := range method.Inputs {
+		inputs[i] = &types.CallArg{
+			Name: arg.Name,
+			Type: arg.Type.String(),
+			Data: fmt.Sprintf("%v", values[i]),
+		}
+	}
+	return method.Sig, inputs
 }
