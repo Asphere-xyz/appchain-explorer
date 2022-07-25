@@ -1,0 +1,72 @@
+name: Create and publish a Docker image
+
+on:
+  push:
+    branches: 
+      - devel
+
+
+env:
+  REGISTRY: harbor.stkr.io
+  HARBOR_PROJECT: stkr
+  STKR_HARBOR_USERNAME: 'robot$github-actions-stkr'
+  RANCHER_SERVER_URL_DEV: "https://rancher.stkr-dev.ankr.com/v3"
+  RANCHER_PROJECT_DEV: "local:p-6r72k"
+  SERVICE_NAME: blockscout-gateway
+
+
+jobs:
+  build-and-push-image:
+    runs-on: [self-hosted]
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Log in to the Container registry
+        uses: docker/login-action@f054a8b539a109f9f41c372932f1ae047eff08c9
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ env.STKR_HARBOR_USERNAME }}
+          password: ${{ secrets.STKR_HARBOR_PASSWORD }}
+
+      - name: Extract metadata (tags, labels) for Docker
+        id: meta
+        uses: docker/metadata-action@98669ae865ea3cffbcbaa878cf57c20bbf1c6c38
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.HARBOR_PROJECT }}/${{ env.SERVICE_NAME }}:${{ github.sha }}
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@ad44023a93711e3deb337508980b4b5e9bcdc5dc
+        with:
+          context: .
+          push: true
+          tags: ${{ env.REGISTRY }}/${{ env.HARBOR_PROJECT }}/${{ env.SERVICE_NAME}}:${{ github.sha }}
+
+  deploy-develop:
+    runs-on: [self-hosted]
+    needs: build-and-push-image
+    env:
+      STKR_HARBOR_USERNAME: 'robot$github-actions-stkr'
+      KUBE_NAMESPACE: blockscout-gateway
+      ENVIRONMENT_NAME: dev
+      CHART_NAME: blockscout-gateway
+    steps:
+     - uses: actions/checkout@v1
+     - run: |
+        rancher login ${{ env.RANCHER_SERVER_URL_DEV }}  --token ${{ secrets.STKR_RANCHER_TOKEN_DEV }} --context ${{ env.RANCHER_PROJECT_DEV }}
+        rancher kubectl config view --raw > /tmp/config && export KUBECONFIG=/tmp/config
+        kubectl create namespace $KUBE_NAMESPACE || true
+        kubectl delete secret docker-secret -n $KUBE_NAMESPACE || true
+        echo $STKR_HARBOR_USERNAME
+        kubectl create secret docker-registry docker-secret --docker-server=${{ env.REGISTRY }} --docker-username=$STKR_HARBOR_USERNAME --docker-password=${{ secrets.STKR_HARBOR_PASSWORD }} -n $KUBE_NAMESPACE || true
+        kubectl patch serviceaccount default -p '{"imagePullSecrets": [{"name": "docker-secret"}]}' -n $KUBE_NAMESPACE || true
+        kubectl annotate namespace $KUBE_NAMESPACE field.cattle.io/projectId=${{ env.RANCHER_PROJECT_DEV }} || true
+        helm dependency update ./charts
+        helm upgrade --install $CHART_NAME --namespace=$KUBE_NAMESPACE \
+            --set global.env=$ENVIRONMENT_NAME \
+            --set global.repository=${{ env.REGISTRY }}/${{ env.HARBOR_PROJECT }} \
+            --set global.tag=${{ github.sha }} \
+            ./charts
