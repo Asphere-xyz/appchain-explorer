@@ -20,6 +20,11 @@ jobs:
       - name: Check out the repo
         uses: actions/checkout@v3
 
+      - name: Git Sumbodule Update
+        run: |
+          git pull --recurse-submodules
+          git submodule update --remote --recursive
+
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v2
 
