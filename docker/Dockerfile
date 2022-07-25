@@ -10,6 +10,7 @@ FROM node:16-alpine AS build_frontend
 WORKDIR /build
 RUN apk update && apk add python3 alpine-sdk
 COPY ./web /build
+RUN cd /build
 RUN yarn
 RUN yarn build
 
