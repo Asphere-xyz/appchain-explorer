@@ -20,6 +20,7 @@ jobs:
       - name: Check out the repo
         uses: actions/checkout@v3
         with:
+          token: ${{ secrets.READONLY_TOKEN }}
           submodules: recursive
 
       - name: Set up QEMU
