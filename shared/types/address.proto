@@ -14,4 +14,5 @@ message Address {
   uint32 transactions = 4;
   uint64 gas_used = 5;
   uint32 blocks_validated = 6;
+  uint32 token_transfers = 7;
 }

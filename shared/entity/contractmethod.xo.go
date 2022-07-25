@@ -169,7 +169,7 @@ func ContractMethodByID(ctx context.Context, db DB, id int64) (*ContractMethod, 
 }
 
 // ContractMethodsByIdentifier runs a custom query, returning results as ContractMethod.
-func ContractMethodsByIdentifier(ctx context.Context, db DB, identifier uint32) ([]*ContractMethod, error) {
+func ContractMethodsByIdentifier(ctx context.Context, db DB, identifier int32) ([]*ContractMethod, error) {
 	// query
 	const sqlstr = `SELECT * FROM "contract_methods" ` +
 		`WHERE identifier = $1`

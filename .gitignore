@@ -6,3 +6,5 @@ charts/requirements.lock
 charts/charts/
 certs/prod/
 .vscode
+
+web/node_modules

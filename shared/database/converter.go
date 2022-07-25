@@ -84,6 +84,10 @@ func txDetailsToProto(tx *entity.Transaction) *types.TransactionDetails {
 	if tx == nil {
 		return nil
 	}
+	methodId := ""
+	if len(tx.Input) != 0 {
+		methodId = fmt.Sprintf("0x%x", tx.Input[0:4])
+	}
 	return &types.TransactionDetails{
 		TxHash:      fmt.Sprintf("0x%x", tx.Hash),
 		Status:      types.TransactionStatus(tx.Status.Int64),
@@ -99,9 +103,9 @@ func txDetailsToProto(tx *entity.Transaction) *types.TransactionDetails {
 		GasLimit:    uint64(tx.Gas),
 		GasUsed:     uint64(tx.GasUsed.Float64),
 		Type:        uint32(tx.Type.Int64),
-		Nonce:       uint64(tx.Nonce),
+		Nonce:       uint32(tx.Nonce),
 		Index:       uint32(tx.Index.Int64),
-		MethodId:    fmt.Sprintf("0x%x", tx.Input[0:4]),
+		MethodId:    methodId,
 		RawInput:    fmt.Sprintf("0x%x", tx.Input),
 	}
 }

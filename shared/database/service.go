@@ -107,9 +107,12 @@ func (s *Service) GetTransactionByHash(ctx context.Context, txHash string) (*typ
 	}
 	result.TokenTransfers = tokenTransfersToProto(transfers, tokens)
 
+	if len(tx.Input) == 0 {
+		return result, err
+	}
 	//Try extract signature, methodname and args
 	sig := tx.Input[0:4]
-	identifier := binary.LittleEndian.Uint32(sig)
+	identifier := int32(binary.LittleEndian.Uint32(sig))
 	methods, err := entity.ContractMethodsByIdentifier(ctx, s.db, identifier)
 	if err != nil {
 		return nil, err
@@ -181,6 +184,14 @@ func (s *Service) getBlockValidatedByAddress(ctx context.Context, hash []byte) (
 	return tokens, err
 }
 
+func (s *Service) getTokenTransfersCountByAddress(ctx context.Context, hash []byte) (uint32, error) {
+	count, err := entity.TokenTransferCountByAddressHash(ctx, s.db, hash)
+	if err == sql.ErrNoRows {
+		return 0, nil
+	}
+	return count, err
+}
+
 func (s *Service) GetAddress(ctx context.Context, hash string) (*types.Address, error) {
 	hashBytes, err := hex.DecodeString(strings.TrimPrefix(hash, "0x"))
 	if err != nil {
@@ -199,7 +210,12 @@ func (s *Service) GetAddress(ctx context.Context, hash string) (*types.Address, 
 	if err != nil {
 		return nil, err
 	}
+	tokenTransfersCount, err := entity.TokenTransferCountByAddressHash(ctx, s.db, hashBytes)
+	if err != nil {
+		return nil, err
+	}
 	result.Tokens = uint32(len(tokens))
 	result.BlocksValidated = uint32(len(validatedBlocks))
+	result.TokenTransfers = tokenTransfersCount
 	return result, nil
 }

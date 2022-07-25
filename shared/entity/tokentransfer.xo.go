@@ -5,8 +5,9 @@ package entity
 import (
 	"context"
 	"database/sql"
-	"github.com/lib/pq"
 	"time"
+
+	"github.com/lib/pq"
 )
 
 // TokenTransfer represents a row from 'public.token_transfers'.
@@ -510,4 +511,18 @@ func TokenTransfersByHash(ctx context.Context, db DB, hash []byte) ([]*TokenTran
 		return nil, logerror(err)
 	}
 	return res, nil
+}
+
+// TokenTransferByHash runs a custom query, returning results as TokenTransfer.
+func TokenTransferCountByAddressHash(ctx context.Context, db DB, addressHash []byte) (uint32, error) {
+	// query
+	const sqlstr = `SELECT COUNT(transaction_hash) FROM "token_transfers" ` +
+		`WHERE from_address_hash = $1 OR to_address_hash = $1`
+	// run
+	logf(sqlstr, addressHash)
+	var tt uint32
+	if err := db.QueryRowContext(ctx, sqlstr, addressHash).Scan(&tt); err != nil {
+		return 0, logerror(err)
+	}
+	return tt, nil
 }

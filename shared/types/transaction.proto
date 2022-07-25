@@ -56,7 +56,7 @@ message TransactionDetails {
   uint64 gas_limit = 12;
   uint64 gas_used = 13;
   uint32 type = 14;
-  uint64 nonce = 15;
+  uint32 nonce = 15;
   uint32 index = 16;
   string method_id = 17;
   string method_name = 18;
