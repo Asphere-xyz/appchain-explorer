@@ -7,22 +7,14 @@ import (
 	"github.com/Ankr-network/ankr-protocol/shared/database"
 	"github.com/Ankr-network/ankr-protocol/shared/types"
 	"github.com/grpc-ecosystem/go-grpc-middleware"
-	grpc_zap "github.com/grpc-ecosystem/go-grpc-middleware/logging/zap"
 	"github.com/grpc-ecosystem/go-grpc-prometheus"
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
-	"go.uber.org/zap"
 	"google.golang.org/grpc"
 	"net"
 	"net/http"
 	"strings"
-)
-
-type key int
-
-const (
-	requestIDKey key = 0
 )
 
 type Service struct {
@@ -44,17 +36,12 @@ func (s *Service) Start(cp shared.IConfigProvider) error {
 	if err != nil {
 		return errors.Wrapf(err, "failed to listen for address (%s)", config.GrpcAddress)
 	}
-	logger, _ := zap.NewProduction()
-	defer logger.Sync()
-	grpc_zap.ReplaceGrpcLoggerV2WithVerbosity(logger, int(zap.DebugLevel))
 	s.grpcServer = grpc.NewServer(
 		grpc_middleware.WithStreamServerChain(
 			grpc_prometheus.StreamServerInterceptor,
-			grpc_zap.StreamServerInterceptor(logger),
 		),
 		grpc_middleware.WithUnaryServerChain(
 			grpc_prometheus.UnaryServerInterceptor,
-			grpc_zap.UnaryServerInterceptor(logger),
 		),
 	)
 	grpc_prometheus.Register(s.grpcServer)
@@ -84,9 +71,25 @@ func (s *Service) Start(cp shared.IConfigProvider) error {
 	} else {
 		httpListener = listener
 	}
+	fs := http.FileServer(http.Dir(config.StaticFolder))
 	go func() {
-		log.Infof("gateway HTTP server is listening on address %s", config.HttpAddress)
-		err := http.Serve(httpListener, allowCORS(mux))
+		log.Infof("gateway HTTP server is listening on address %s and static folder serving at %s", config.HttpAddress, config.StaticFolder)
+		err := http.Serve(httpListener, http.HandlerFunc(func(res http.ResponseWriter, req *http.Request) {
+			// check is it cors request
+			if ok := handleCorsRequest(res, req); ok {
+				return
+			}
+			// check is it api request
+			if strings.HasPrefix(req.URL.Path, "/v1alpha") {
+				mux.ServeHTTP(res, req)
+				return
+			}
+			// serve static files from dir
+			if !strings.Contains(req.URL.Path, "/static") {
+				req, _ = http.NewRequest(req.Method, "/", req.Body)
+			}
+			fs.ServeHTTP(res, req)
+		}))
 		if err != nil {
 			log.Panicf("failed to start http server: %+v", err)
 		}
@@ -94,59 +97,19 @@ func (s *Service) Start(cp shared.IConfigProvider) error {
 	return nil
 }
 
-func preflightHandler(w http.ResponseWriter, r *http.Request) {
+func handleCorsRequest(w http.ResponseWriter, r *http.Request) bool {
+	var origin string
+	if origin = r.Header.Get("Origin"); origin == "" {
+		return false
+	}
+	w.Header().Set("Access-Control-Allow-Origin", origin)
+	w.Header().Set("Access-Control-Allow-Credentials", "true")
+	if r.Method != "OPTIONS" || r.Header.Get("Access-Control-Request-Method") == "" {
+		return false
+	}
 	headers := []string{"Content-Type", "Accept"}
 	w.Header().Set("Access-Control-Allow-Headers", strings.Join(headers, ","))
 	methods := []string{"GET", "HEAD", "POST", "PUT", "DELETE"}
 	w.Header().Set("Access-Control-Allow-Methods", strings.Join(methods, ","))
-	return
-}
-
-func allowCORS(h http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if origin := r.Header.Get("Origin"); origin != "" {
-			w.Header().Set("Access-Control-Allow-Origin", origin)
-			w.Header().Set("Access-Control-Allow-Credentials", "true")
-			if r.Method == "OPTIONS" && r.Header.Get("Access-Control-Request-Method") != "" {
-				preflightHandler(w, r)
-				return
-			}
-		}
-		h.ServeHTTP(w, r)
-	})
-}
-
-func logging(logger *zap.Logger) func(http.Handler) http.Handler {
-	return func(next http.Handler) http.Handler {
-		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			defer func() {
-				requestID, ok := r.Context().Value(requestIDKey).(string)
-				if !ok {
-					requestID = "unknown"
-				}
-				logger.Debug("Request",
-					zap.String("RequestID", requestID),
-					zap.String("Method", r.Method),
-					zap.String("Path", r.URL.Path),
-					zap.String("Addr", r.RemoteAddr),
-					zap.String("UserAgent", r.UserAgent()),
-				)
-			}()
-			next.ServeHTTP(w, r)
-		})
-	}
-}
-
-func tracing(nextRequestID func() string) func(http.Handler) http.Handler {
-	return func(next http.Handler) http.Handler {
-		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			requestID := r.Header.Get("X-Request-Id")
-			if requestID == "" {
-				requestID = nextRequestID()
-			}
-			ctx := context.WithValue(r.Context(), requestIDKey, requestID)
-			w.Header().Set("X-Request-Id", requestID)
-			next.ServeHTTP(w, r.WithContext(ctx))
-		})
-	}
+	return true
 }

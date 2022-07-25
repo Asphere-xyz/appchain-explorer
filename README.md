@@ -1,4 +1,3 @@
-Blockscout Gateway
+Sidechain Explorer
 ==================
-
 
