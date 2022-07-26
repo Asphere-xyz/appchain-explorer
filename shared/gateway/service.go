@@ -6,6 +6,7 @@ import (
 	"github.com/Ankr-network/ankr-protocol/shared"
 	"github.com/Ankr-network/ankr-protocol/shared/database"
 	"github.com/Ankr-network/ankr-protocol/shared/types"
+	mux2 "github.com/gorilla/mux"
 	"github.com/grpc-ecosystem/go-grpc-middleware"
 	"github.com/grpc-ecosystem/go-grpc-prometheus"
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
@@ -14,13 +15,13 @@ import (
 	"google.golang.org/grpc"
 	"net"
 	"net/http"
-	"strings"
 )
 
 type Service struct {
 	databaseService *database.Service
 	// state
 	grpcServer *grpc.Server
+	webSocket  WebSocketServer
 }
 
 func NewService(databaseService *database.Service) *Service {
@@ -74,42 +75,19 @@ func (s *Service) Start(cp shared.IConfigProvider) error {
 	fs := http.FileServer(http.Dir(config.StaticFolder))
 	go func() {
 		log.Infof("gateway HTTP server is listening on address %s and static folder serving at %s", config.HttpAddress, config.StaticFolder)
-		err := http.Serve(httpListener, http.HandlerFunc(func(res http.ResponseWriter, req *http.Request) {
-			// check is it cors request
-			if ok := handleCorsRequest(res, req); ok {
-				return
-			}
-			// check is it api request
-			if strings.HasPrefix(req.URL.Path, "/v1alpha") {
-				mux.ServeHTTP(res, req)
-				return
-			}
-			// serve static files from dir
-			if !strings.Contains(req.URL.Path, "/static") {
-				req, _ = http.NewRequest(req.Method, "/", req.Body)
-			}
+		router := mux2.NewRouter()
+		router.PathPrefix("/v1alpha").Handler(mux)
+		router.PathPrefix("/static").Handler(fs)
+		router.PathPrefix("/ws").Handler(&s.webSocket)
+		router.PathPrefix("/").HandlerFunc(func(res http.ResponseWriter, req *http.Request) {
+			req, _ = http.NewRequest(req.Method, "/", req.Body)
+			// fallback to the index.html by default
 			fs.ServeHTTP(res, req)
-		}))
-		if err != nil {
+		})
+		router.Use(mux2.CORSMethodMiddleware(router))
+		if err := http.Serve(httpListener, router); err != nil {
 			log.Panicf("failed to start http server: %+v", err)
 		}
 	}()
 	return nil
-}
-
-func handleCorsRequest(w http.ResponseWriter, r *http.Request) bool {
-	var origin string
-	if origin = r.Header.Get("Origin"); origin == "" {
-		return false
-	}
-	w.Header().Set("Access-Control-Allow-Origin", origin)
-	w.Header().Set("Access-Control-Allow-Credentials", "true")
-	if r.Method != "OPTIONS" || r.Header.Get("Access-Control-Request-Method") == "" {
-		return false
-	}
-	headers := []string{"Content-Type", "Accept"}
-	w.Header().Set("Access-Control-Allow-Headers", strings.Join(headers, ","))
-	methods := []string{"GET", "HEAD", "POST", "PUT", "DELETE"}
-	w.Header().Set("Access-Control-Allow-Methods", strings.Join(methods, ","))
-	return true
 }
