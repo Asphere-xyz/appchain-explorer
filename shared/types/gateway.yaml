@@ -15,5 +15,8 @@ http:
         - get: /v1alpha/block/hash/{hash}
     - selector: com.ankr.BlockscoutGateway.GetTransactionByHash
       get: /v1alpha/tx/{hash}
+      # deprecated (don't use such pattern)
     - selector: com.ankr.BlockscoutGateway.GetTokenTransfersByAddress
       get: /v1alpha/address/transfers/{address}
+    - selector: com.ankr.BlockscoutGateway.GetTokenTransfersByAddress
+      get: /v1alpha/address/{address}/transfers

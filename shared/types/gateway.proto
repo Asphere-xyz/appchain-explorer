@@ -11,7 +11,6 @@ import "block.proto";
 import "transaction.proto";
 import "address.proto";
 import "token_transfer.proto";
-import "google/api/annotations.proto";
 
 /**
  *        ____  ____   ____
@@ -24,36 +23,12 @@ import "google/api/annotations.proto";
  **/
 
 service BlockscoutGateway {
-  rpc GetRecentBlocks(GetRecentBlocksRequest) returns (GetRecentBlocksReply) {
-    option (google.api.http) = {
-      get: "/v1alpha/block"
-    };
-  }
-  rpc GetRecentTxs(GetRecentTxsRequest) returns (GetRecentTxsReply) {
-    option (google.api.http) = {
-      get: "/v1alpha/tx"
-    };
-  }
-  rpc GetAddress(GetAddressRequest) returns (GetAddressReply) {
-    option (google.api.http) = {
-      get: "/v1alpha/address/{hash}"
-    };
-  }
-  rpc GetBlockByHashOrNumber(GetBlockByHashOrNumberRequest) returns (GetBlockByHashOrNumberReply) {
-    option (google.api.http) = {
-      get: "/v1alpha/block/{number}"
-    };
-  }
-  rpc GetTransactionByHash(GetTransactionByHashRequest) returns (GetTransactionByHashReply) {
-    option (google.api.http) = {
-      get: "/v1alpha/tx/{hash}"
-    };
-  }
-  rpc GetTokenTransfersByAddress(GetTokenTransfersByAddressRequest) returns (GetTokenTransfersByAddressReply) {
-    option (google.api.http) = {
-      get: "/v1alpha/address/transfers/{address}"
-    };
-  }
+  rpc GetRecentBlocks(GetRecentBlocksRequest) returns (GetRecentBlocksReply);
+  rpc GetRecentTxs(GetRecentTxsRequest) returns (GetRecentTxsReply);
+  rpc GetAddress(GetAddressRequest) returns (GetAddressReply);
+  rpc GetBlockByHashOrNumber(GetBlockByHashOrNumberRequest) returns (GetBlockByHashOrNumberReply);
+  rpc GetTransactionByHash(GetTransactionByHashRequest) returns (GetTransactionByHashReply);
+  rpc GetTokenTransfersByAddress(GetTokenTransfersByAddressRequest) returns (GetTokenTransfersByAddressReply);
 }
 
 message GetRecentBlocksRequest {
