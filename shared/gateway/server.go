@@ -16,6 +16,7 @@ import (
 	"google.golang.org/grpc"
 	"net"
 	"net/http"
+	"strings"
 )
 
 type Server struct {
@@ -81,6 +82,15 @@ func (s *Server) Start(cp shared.IConfigProvider) error {
 		router.PathPrefix("/static").Handler(fs)
 		router.PathPrefix("/ws").Handler(s.websocketServer)
 		router.PathPrefix("/").HandlerFunc(func(res http.ResponseWriter, req *http.Request) {
+			// special case for serving files with extensions
+			path := strings.Split(req.URL.Path, "/")
+			if len(path) > 0 {
+				fileNameWithExt := strings.Split(path[len(path)-1], ".")
+				if len(fileNameWithExt) > 1 {
+					fs.ServeHTTP(res, req)
+					return
+				}
+			}
 			req, _ = http.NewRequest(req.Method, "/", req.Body)
 			// fallback to the index.html by default
 			fs.ServeHTTP(res, req)
