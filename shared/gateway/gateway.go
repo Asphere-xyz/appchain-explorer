@@ -20,7 +20,7 @@ const MaxRecentBlockLimit = 100
 const DefaultRecentTxsLimit = 10
 const MaxRecentTxLimit = 100
 
-func (s *Service) GetRecentBlocks(ctx context.Context, req *types.GetRecentBlocksRequest) (*types.GetRecentBlocksReply, error) {
+func (s *Server) GetRecentBlocks(ctx context.Context, req *types.GetRecentBlocksRequest) (*types.GetRecentBlocksReply, error) {
 	if req.Limit == 0 {
 		req.Limit = DefaultRecentBlockLimit
 	} else if req.Limit > MaxRecentBlockLimit {
@@ -30,7 +30,7 @@ func (s *Service) GetRecentBlocks(ctx context.Context, req *types.GetRecentBlock
 	return &types.GetRecentBlocksReply{Blocks: blocks}, err
 }
 
-func (s *Service) GetRecentTxs(ctx context.Context, req *types.GetRecentTxsRequest) (*types.GetRecentTxsReply, error) {
+func (s *Server) GetRecentTxs(ctx context.Context, req *types.GetRecentTxsRequest) (*types.GetRecentTxsReply, error) {
 	if req.Limit == 0 {
 		req.Limit = DefaultRecentTxsLimit
 	} else if req.Limit > MaxRecentTxLimit {
@@ -43,7 +43,7 @@ func (s *Service) GetRecentTxs(ctx context.Context, req *types.GetRecentTxsReque
 	return &types.GetRecentTxsReply{Txs: txs}, err
 }
 
-func (s *Service) GetBlockByHashOrNumber(ctx context.Context, req *types.GetBlockByHashOrNumberRequest) (*types.GetBlockByHashOrNumberReply, error) {
+func (s *Server) GetBlockByHashOrNumber(ctx context.Context, req *types.GetBlockByHashOrNumberRequest) (*types.GetBlockByHashOrNumberReply, error) {
 	var block *types.BlockDetails
 	var err error
 	if len(req.Hash) > 0 {
@@ -54,19 +54,19 @@ func (s *Service) GetBlockByHashOrNumber(ctx context.Context, req *types.GetBloc
 	return &types.GetBlockByHashOrNumberReply{Block: block}, err
 }
 
-func (s *Service) GetTransactionByHash(ctx context.Context, req *types.GetTransactionByHashRequest) (*types.GetTransactionByHashReply, error) {
+func (s *Server) GetTransactionByHash(ctx context.Context, req *types.GetTransactionByHashRequest) (*types.GetTransactionByHashReply, error) {
 	tx, err := s.databaseService.GetTransactionByHash(ctx, req.Hash)
 	return &types.GetTransactionByHashReply{Transaction: tx}, err
 }
 
-func (s *Service) GetAddress(ctx context.Context, req *types.GetAddressRequest) (*types.GetAddressReply, error) {
+func (s *Server) GetAddress(ctx context.Context, req *types.GetAddressRequest) (*types.GetAddressReply, error) {
 	address, err := s.databaseService.GetAddress(ctx, req.Hash)
 	return &types.GetAddressReply{
 		Address: address,
 	}, err
 }
 
-func (s *Service) GetTokenTransfersByAddress(ctx context.Context, req *types.GetTokenTransfersByAddressRequest) (*types.GetTokenTransfersByAddressReply, error) {
+func (s *Server) GetTokenTransfersByAddress(ctx context.Context, req *types.GetTokenTransfersByAddressRequest) (*types.GetTokenTransfersByAddressReply, error) {
 	//address, err := s.databaseService.GetAddress(ctx, req.Hash)
 	//return &types.GetAddressReply{
 	//	Address: address,

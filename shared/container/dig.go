@@ -4,6 +4,7 @@ import (
 	"github.com/Ankr-network/ankr-protocol/shared/common"
 	"github.com/Ankr-network/ankr-protocol/shared/database"
 	"github.com/Ankr-network/ankr-protocol/shared/gateway"
+	"github.com/Ankr-network/ankr-protocol/shared/websocket"
 	log "github.com/sirupsen/logrus"
 	"go.uber.org/dig"
 )
@@ -52,13 +53,15 @@ func newDefaultEmptyContainer() IContainer {
 func NewContainer() IContainer {
 	di := newDefaultEmptyContainer()
 	di.MustProvide(database.NewService)
-	di.MustProvide(gateway.NewService)
+	di.MustProvide(gateway.NewServer)
+	di.MustProvide(websocket.NewServer)
 	return di
 }
 
 func MustStartDefault(di IContainer) {
 	di.MustInvoke(func(s *database.Service) error { return di.Invoke(s.Start) })
-	di.MustInvoke(func(s *gateway.Service) error { return di.Invoke(s.Start) })
+	di.MustInvoke(func(s *gateway.Server) error { return di.Invoke(s.Start) })
+	di.MustInvoke(func(s *websocket.Server) error { return di.Invoke(s.Start) })
 }
 
 func must(err error) {

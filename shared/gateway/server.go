@@ -6,6 +6,7 @@ import (
 	"github.com/Ankr-network/ankr-protocol/shared"
 	"github.com/Ankr-network/ankr-protocol/shared/database"
 	"github.com/Ankr-network/ankr-protocol/shared/types"
+	"github.com/Ankr-network/ankr-protocol/shared/websocket"
 	mux2 "github.com/gorilla/mux"
 	"github.com/grpc-ecosystem/go-grpc-middleware"
 	"github.com/grpc-ecosystem/go-grpc-prometheus"
@@ -17,18 +18,18 @@ import (
 	"net/http"
 )
 
-type Service struct {
+type Server struct {
 	databaseService *database.Service
+	websocketServer *websocket.Server
 	// state
 	grpcServer *grpc.Server
-	webSocket  WebSocketServer
 }
 
-func NewService(databaseService *database.Service) *Service {
-	return &Service{databaseService: databaseService}
+func NewServer(databaseService *database.Service, websocketServer *websocket.Server) *Server {
+	return &Server{databaseService: databaseService, websocketServer: websocketServer}
 }
 
-func (s *Service) Start(cp shared.IConfigProvider) error {
+func (s *Server) Start(cp shared.IConfigProvider) error {
 	config := &Config{}
 	if err := cp.Parse(config); err != nil {
 		return err
@@ -78,7 +79,7 @@ func (s *Service) Start(cp shared.IConfigProvider) error {
 		router := mux2.NewRouter()
 		router.PathPrefix("/v1alpha").Handler(mux)
 		router.PathPrefix("/static").Handler(fs)
-		router.PathPrefix("/ws").Handler(&s.webSocket)
+		router.PathPrefix("/ws").Handler(s.websocketServer)
 		router.PathPrefix("/").HandlerFunc(func(res http.ResponseWriter, req *http.Request) {
 			req, _ = http.NewRequest(req.Method, "/", req.Body)
 			// fallback to the index.html by default
