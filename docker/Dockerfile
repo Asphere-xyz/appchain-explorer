@@ -12,7 +12,7 @@ RUN apk update && apk add python3 alpine-sdk
 COPY ./web /build
 RUN cd /build
 RUN yarn
-RUN yarn build
+RUN yarn build:docker
 
 FROM golang:1.18 AS run
 WORKDIR /explorer
