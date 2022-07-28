@@ -7,6 +7,7 @@ import (
 	"github.com/gorilla/websocket"
 	log "github.com/sirupsen/logrus"
 	"net/http"
+	"sync"
 	"time"
 )
 
@@ -14,7 +15,7 @@ type Server struct {
 	databaseService *database.Service
 	// state
 	upgrader websocket.Upgrader
-	conns    []*websocket.Conn
+	conns    sync.Map
 }
 
 func NewServer(databaseService *database.Service) *Server {
@@ -43,7 +44,7 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		log.Debugf("failed to establish websocket upgrade: %v", err)
 		return
 	}
-	s.conns = append(s.conns, c)
+	s.conns.Store(c, true)
 }
 
 func (s *Server) broadcastToAll(channel string, data interface{}) error {
@@ -55,8 +56,15 @@ func (s *Server) broadcastToAll(channel string, data interface{}) error {
 	if err != nil {
 		return err
 	}
-	for _, c := range s.conns {
-		_ = c.WriteMessage(websocket.TextMessage, jsonMessage)
-	}
+	s.conns.Range(func(key, value any) bool {
+		con, ok := key.(*websocket.Conn)
+		if !ok {
+			log.Panicf("failed to cast mapping key to conn")
+		}
+		if err := con.WriteMessage(websocket.TextMessage, jsonMessage); err != nil {
+			s.conns.Delete(con)
+		}
+		return true
+	})
 	return nil
 }
