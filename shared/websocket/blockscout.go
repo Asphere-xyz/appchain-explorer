@@ -12,12 +12,13 @@ import (
 	"time"
 )
 
-var subExchangeRateNewRate = "[\"6\",\"6\",\"exchange_rate:new_rate\",\"phx_join\",{}]\t"
-var subBlocksIndexing = "[\"3\",\"3\",\"blocks:indexing\",\"phx_join\",{}]\t"
-var subBlocksNewBlock = "[\"12\",\"12\",\"blocks:new_block\",\"phx_join\",{}]\t"
-var subAddressesNewAddress = "[\"9\",\"9\",\"addresses:new_address\",\"phx_join\",{}]\t"
-var subTxsNewTx = "[\"15\",\"15\",\"transactions:new_transaction\",\"phx_join\",{}]\t"
-var subTxsStats = "[\"18\",\"18\",\"transactions:stats\",\"phx_join\",{}]\t"
+var subExchangeRateNewRate = "[\"6\",\"6\",\"exchange_rate:new_rate\",\"phx_join\",{}]"
+var subBlocksIndexing = "[\"3\",\"3\",\"blocks:indexing\",\"phx_join\",{}]"
+var subBlocksNewBlock = "[\"12\",\"12\",\"blocks:new_block\",\"phx_join\",{}]"
+var subAddressesNewAddress = "[\"9\",\"9\",\"addresses:new_address\",\"phx_join\",{}]"
+var subTxsNewTx = "[\"15\",\"15\",\"transactions:new_transaction\",\"phx_join\",{}]"
+var subTxsStats = "[\"18\",\"18\",\"transactions:stats\",\"phx_join\",{}]"
+var subPhoenixHeatBeat = "[null,\"99\",\"phoenix\",\"heartbeat\",{}]"
 
 func (s *Server) blockscoutWorker(config *Config) error {
 	log.Infof("connecting to the blockscout websocket url: %s", config.BlockscoutWebSocketUrl)
@@ -30,7 +31,24 @@ func (s *Server) blockscoutWorker(config *Config) error {
 	if err != nil {
 		return errors.Wrapf(err, "failed to connect to the blockscout websocket url")
 	}
-	defer func() { _ = con.Close() }()
+	closedC := make(chan struct{})
+	defer func() {
+		closedC <- struct{}{}
+		_ = con.Close()
+	}()
+	// heatbeat worker
+	go func() {
+		ticker := time.NewTicker(10 * time.Second)
+		defer func() { ticker.Stop() }()
+		for {
+			select {
+			case <-ticker.C:
+				_ = con.WriteMessage(websocket.TextMessage, []byte(subPhoenixHeatBeat))
+			case <-closedC:
+				return
+			}
+		}
+	}()
 	// subscribe for channels
 	defaultsSubs := []string{
 		subExchangeRateNewRate,
@@ -56,6 +74,10 @@ func (s *Server) blockscoutWorker(config *Config) error {
 		}
 		switch result.result {
 		case "phx_reply":
+			// don't print ping/pongs
+			if result.channel != "phoenix" {
+				log.Infof("subscribed to the blockscout's channel (%s)", result.channel)
+			}
 			continue
 		case "phx_error":
 			return fmt.Errorf("handled websocket error: %s", string(message))
@@ -65,8 +87,18 @@ func (s *Server) blockscoutWorker(config *Config) error {
 				log.WithError(err).Errorf("failed to parse new block")
 				continue
 			}
-			if err := s.broadcastNewBlock(block); err != nil {
+			if err := s.broadcastToAll("newBlock", block); err != nil {
 				log.WithError(err).Errorf("failed to broadcast new block")
+				continue
+			}
+		case "new_transaction":
+			transaction, err := s.blockscoutParseNewTransaction(result)
+			if err != nil {
+				log.WithError(err).Errorf("failed to parse new transaction")
+				continue
+			}
+			if err := s.broadcastToAll("newTransaction", transaction); err != nil {
+				log.WithError(err).Errorf("failed to broadcast new transaction")
 				continue
 			}
 		}
@@ -101,17 +133,19 @@ func parseBlockscoutReply(rawBody []byte) (result blockscoutMessage, err error) 
 }
 
 func (s *Server) blockscoutParseNewBlock(message blockscoutMessage) (*types.BlockDetails, error) {
-	//type mappingData struct {
-	//	average_block_time string
-	//	block_html         string
-	//	block_miner_hash   string
-	//	block_number       float64
-	//	chain_block_html   string
-	//}
 	var blockNumber float64
 	var ok bool
 	if blockNumber, ok = message.response["block_number"].(float64); !ok {
 		return nil, errBadMessage
 	}
 	return s.databaseService.GetBlockByNumber(context.TODO(), uint64(blockNumber))
+}
+
+func (s *Server) blockscoutParseNewTransaction(message blockscoutMessage) (*types.TransactionDetails, error) {
+	var transactionHash string
+	var ok bool
+	if transactionHash, ok = message.response["transaction_hash"].(string); !ok {
+		return nil, errBadMessage
+	}
+	return s.databaseService.GetTransactionByHash(context.TODO(), transactionHash)
 }

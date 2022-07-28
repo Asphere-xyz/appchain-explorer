@@ -1,6 +1,7 @@
 package websocket
 
 import (
+	"encoding/json"
 	"github.com/Ankr-network/ankr-protocol/shared"
 	"github.com/Ankr-network/ankr-protocol/shared/database"
 	"github.com/gorilla/websocket"
@@ -13,6 +14,7 @@ type Server struct {
 	databaseService *database.Service
 	// state
 	upgrader websocket.Upgrader
+	conns    []*websocket.Conn
 }
 
 func NewServer(databaseService *database.Service) *Server {
@@ -41,18 +43,20 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		log.Debugf("failed to establish websocket upgrade: %v", err)
 		return
 	}
-	defer func() { _ = c.Close() }()
-	for {
-		mt, message, err := c.ReadMessage()
-		if err != nil {
-			log.Println("read:", err)
-			break
-		}
-		log.Printf("recv: %s", message)
-		err = c.WriteMessage(mt, message)
-		if err != nil {
-			log.Println("write:", err)
-			break
-		}
+	s.conns = append(s.conns, c)
+}
+
+func (s *Server) broadcastToAll(channel string, data interface{}) error {
+	type messagePayload struct {
+		Channel string      `json:"channel"`
+		Data    interface{} `json:"data"`
 	}
+	jsonMessage, err := json.Marshal(messagePayload{Channel: channel, Data: data})
+	if err != nil {
+		return err
+	}
+	for _, c := range s.conns {
+		_ = c.WriteMessage(websocket.TextMessage, jsonMessage)
+	}
+	return nil
 }
