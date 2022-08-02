@@ -95,10 +95,33 @@ func (s *Server) Start(cp shared.IConfigProvider) error {
 			// fallback to the index.html by default
 			fs.ServeHTTP(res, req)
 		})
-		router.Use(mux2.CORSMethodMiddleware(router))
+		router.Use(func(next http.Handler) http.Handler {
+			return http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
+				if !handleCorsRequest(w, req) {
+					next.ServeHTTP(w, req)
+				}
+			})
+		})
 		if err := http.Serve(httpListener, router); err != nil {
 			log.Panicf("failed to start http server: %+v", err)
 		}
 	}()
 	return nil
+}
+
+func handleCorsRequest(w http.ResponseWriter, r *http.Request) bool {
+	var origin string
+	if origin = r.Header.Get("Origin"); origin == "" {
+		return false
+	}
+	w.Header().Set("Access-Control-Allow-Origin", origin)
+	w.Header().Set("Access-Control-Allow-Credentials", "true")
+	if r.Method != "OPTIONS" || r.Header.Get("Access-Control-Request-Method") == "" {
+		return false
+	}
+	headers := []string{"Content-Type", "Accept"}
+	w.Header().Set("Access-Control-Allow-Headers", strings.Join(headers, ","))
+	methods := []string{"GET", "HEAD", "POST", "PUT", "DELETE"}
+	w.Header().Set("Access-Control-Allow-Methods", strings.Join(methods, ","))
+	return true
 }
