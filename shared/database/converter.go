@@ -141,7 +141,7 @@ func addressToProto(address *entity.Address) (result *types.Address) {
 	}
 	return &types.Address{
 		Hash:         fmt.Sprintf("0x%x", address.Hash),
-		Balance:      uint64(address.FetchedCoinBalance.Float64),
+		Balance:      address.FetchedCoinBalance.String,
 		Transactions: uint32(address.TransactionsCount.Int64),
 		GasUsed:      uint64(address.GasUsed.Int64),
 	}

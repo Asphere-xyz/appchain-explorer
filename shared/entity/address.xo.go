@@ -11,18 +11,18 @@ import (
 
 // Address represents a row from 'public.addresses'.
 type Address struct {
-	FetchedCoinBalance            sql.NullFloat64 `json:"fetched_coin_balance"`              // fetched_coin_balance
-	FetchedCoinBalanceBlockNumber sql.NullInt64   `json:"fetched_coin_balance_block_number"` // fetched_coin_balance_block_number
-	Hash                          []byte          `json:"hash"`                              // hash
-	ContractCode                  []byte          `json:"contract_code"`                     // contract_code
-	InsertedAt                    time.Time       `json:"inserted_at"`                       // inserted_at
-	UpdatedAt                     time.Time       `json:"updated_at"`                        // updated_at
-	Nonce                         sql.NullInt64   `json:"nonce"`                             // nonce
-	Decompiled                    sql.NullBool    `json:"decompiled"`                        // decompiled
-	Verified                      sql.NullBool    `json:"verified"`                          // verified
-	GasUsed                       sql.NullInt64   `json:"gas_used"`                          // gas_used
-	TransactionsCount             sql.NullInt64   `json:"transactions_count"`                // transactions_count
-	TokenTransfersCount           sql.NullInt64   `json:"token_transfers_count"`             // token_transfers_count
+	FetchedCoinBalance            sql.NullString `json:"fetched_coin_balance"`              // fetched_coin_balance
+	FetchedCoinBalanceBlockNumber sql.NullInt64  `json:"fetched_coin_balance_block_number"` // fetched_coin_balance_block_number
+	Hash                          []byte         `json:"hash"`                              // hash
+	ContractCode                  []byte         `json:"contract_code"`                     // contract_code
+	InsertedAt                    time.Time      `json:"inserted_at"`                       // inserted_at
+	UpdatedAt                     time.Time      `json:"updated_at"`                        // updated_at
+	Nonce                         sql.NullInt64  `json:"nonce"`                             // nonce
+	Decompiled                    sql.NullBool   `json:"decompiled"`                        // decompiled
+	Verified                      sql.NullBool   `json:"verified"`                          // verified
+	GasUsed                       sql.NullInt64  `json:"gas_used"`                          // gas_used
+	TransactionsCount             sql.NullInt64  `json:"transactions_count"`                // transactions_count
+	TokenTransfersCount           sql.NullInt64  `json:"token_transfers_count"`             // token_transfers_count
 	// xo fields
 	_exists, _deleted bool
 }

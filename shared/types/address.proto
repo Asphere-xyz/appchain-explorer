@@ -9,7 +9,7 @@ package com.ankr;
 
 message Address {
   string hash = 1;
-  uint64 balance = 2;
+  string balance = 2;
   uint32 tokens = 3;
   uint32 transactions = 4;
   uint64 gas_used = 5;
