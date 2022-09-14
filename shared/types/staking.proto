@@ -1,0 +1,33 @@
+syntax = "proto3";
+
+option java_package = "com.ankr.proto";
+option java_outer_classname = "StakingGatewayProto";
+
+option go_package = "./shared/types;types";
+
+package com.ankr;
+
+message Delegator {
+  string address = 1;
+  string amount = 2;
+}
+
+/**
+ *        ____  ____   ____
+ *   __ _|  _ \|  _ \ / ___|
+ *  / _` | |_) | |_) | |
+ * | (_| |  _ <|  __/| |___
+ *  \__, |_| \_\_|    \____|
+ *  |___/
+ *
+ **/
+
+service StakingGateway {
+  rpc GetDelegators(GetDelegatorsRequest) returns (GetDelegatorsReply);
+}
+
+message GetDelegatorsRequest {
+}
+message GetDelegatorsReply {
+  repeated Delegator delegators = 1;
+}

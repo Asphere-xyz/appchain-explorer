@@ -1,3 +1,6 @@
 [submodule "web"]
 	path = web
 	url = https://github.com/Ankr-network/sidechain-explorer-web
+[submodule "genesis"]
+	path = genesis
+	url = https://github.com/Ankr-network/bas-genesis-config

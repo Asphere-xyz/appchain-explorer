@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/Ankr-network/ankr-protocol/shared"
 	"github.com/Ankr-network/ankr-protocol/shared/database"
+	"github.com/Ankr-network/ankr-protocol/shared/staking"
 	"github.com/Ankr-network/ankr-protocol/shared/types"
 	"github.com/Ankr-network/ankr-protocol/shared/websocket"
 	mux2 "github.com/gorilla/mux"
@@ -22,12 +23,13 @@ import (
 type Server struct {
 	databaseService *database.Service
 	websocketServer *websocket.Server
+	stakingService  *staking.Service
 	// state
 	grpcServer *grpc.Server
 }
 
-func NewServer(databaseService *database.Service, websocketServer *websocket.Server) *Server {
-	return &Server{databaseService: databaseService, websocketServer: websocketServer}
+func NewServer(databaseService *database.Service, websocketServer *websocket.Server, stakingService *staking.Service) *Server {
+	return &Server{databaseService: databaseService, websocketServer: websocketServer, stakingService: stakingService}
 }
 
 func (s *Server) Start(cp shared.IConfigProvider) error {
@@ -50,6 +52,7 @@ func (s *Server) Start(cp shared.IConfigProvider) error {
 	grpc_prometheus.Register(s.grpcServer)
 	grpc_prometheus.EnableHandlingTimeHistogram()
 	types.RegisterBlockscoutGatewayServer(s.grpcServer, s)
+	types.RegisterStakingGatewayServer(s.grpcServer, s)
 	go func() {
 		log.Printf("gateway gRPC server is listening on address %s", config.GrpcAddress)
 		if err = s.grpcServer.Serve(listener); err != nil {
@@ -63,6 +66,8 @@ func (s *Server) Start(cp shared.IConfigProvider) error {
 	}
 	mux := runtime.NewServeMux(runtime.WithMarshalerOption(runtime.MIMEWildcard, &runtime.JSONPb{OrigName: true, EmitDefaults: true}))
 	if err := types.RegisterBlockscoutGatewayHandler(context.Background(), mux, conn); err != nil {
+		return fmt.Errorf("failed to register gRPC-gateway handler: %+v", err)
+	} else if err := types.RegisterStakingGatewayHandler(context.Background(), mux, conn); err != nil {
 		return fmt.Errorf("failed to register gRPC-gateway handler: %+v", err)
 	}
 	var httpListener net.Listener
