@@ -53,6 +53,7 @@ service StakingGateway {
 message GetChainsRequest {
   uint32 offset = 1;
   uint32 size = 2;
+  string chain = 3;
 }
 message GetChainsReply {
   repeated Chain chains = 1;

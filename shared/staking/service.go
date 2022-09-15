@@ -3,6 +3,7 @@ package staking
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"github.com/Ankr-network/ankr-protocol/shared"
 	"github.com/Ankr-network/ankr-protocol/shared/staking/abigen"
 	"github.com/Ankr-network/ankr-protocol/shared/types"
@@ -16,6 +17,7 @@ import (
 	"io/ioutil"
 	"math/big"
 	"net/http"
+	"strings"
 	"time"
 )
 
@@ -105,7 +107,7 @@ func (s *Service) getChains(ctx context.Context) (result []*types.Chain, err err
 	if err != nil {
 		return nil, err
 	}
-	return lo.Map(response, func(t chainListResponse, i int) *types.Chain {
+	chains := lo.Map(response, func(t chainListResponse, i int) *types.Chain {
 		return &types.Chain{
 			ChainId:    t.ChainId,
 			ProjectUrl: t.InfoUrl,
@@ -130,6 +132,9 @@ func (s *Service) getChains(ctx context.Context) (result []*types.Chain, err err
 				}
 			}),
 		}
+	})
+	return lo.Filter(chains, func(t *types.Chain, i int) bool {
+		return !s.config.HiddenNetworks[t.ChainId]
 	}), nil
 }
 
@@ -139,6 +144,19 @@ func (s *Service) GetChains(ctx context.Context) (result []*types.Chain, err err
 	}
 	s.chains, err = s.getChains(ctx)
 	return s.chains, err
+}
+
+func (s *Service) GetChain(ctx context.Context, chain string) (*types.Chain, error) {
+	chains, err := s.GetChains(ctx)
+	if err != nil {
+		return nil, err
+	}
+	for _, c := range chains {
+		if strings.ToLower(c.ShortName) == strings.ToLower(chain) {
+			return c, nil
+		}
+	}
+	return nil, fmt.Errorf("unknown chain (%s)", chain)
 }
 
 func (s *Service) getDelegators(ctx context.Context) (result []*types.Delegator, err error) {

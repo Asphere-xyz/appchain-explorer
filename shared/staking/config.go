@@ -3,13 +3,17 @@ package staking
 import (
 	"fmt"
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/samber/lo"
 	"github.com/spf13/viper"
+	"strconv"
+	"strings"
 )
 
 type Config struct {
 	Eth1Url         string
 	StakingContract common.Address
 	ChainListUrl    string
+	HiddenNetworks  map[uint64]bool
 }
 
 func (c *Config) ParseFromViper(v *viper.Viper) error {
@@ -21,6 +25,11 @@ func (c *Config) ParseFromViper(v *viper.Viper) error {
 	}
 	c.StakingContract = stakingContract
 	c.ChainListUrl = viperGetOrDefault(v, "staking.chain-list-url", "https://raw.githubusercontent.com/node-real/bnbchainlist/main/utils/chains.json")
+	hiddenNetworks := viperGetOrDefault(v, "staking.hidden-networks", "56,97")
+	c.HiddenNetworks = lo.SliceToMap(strings.Split(hiddenNetworks, ","), func(t string) (uint64, bool) {
+		res, _ := strconv.Atoi(t)
+		return uint64(res), true
+	})
 	return nil
 }
 
