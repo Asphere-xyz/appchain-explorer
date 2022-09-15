@@ -3,10 +3,17 @@ package gateway
 import (
 	"context"
 	"github.com/Ankr-network/ankr-protocol/shared/types"
+	"github.com/ethereum/go-ethereum/common"
 )
 
 func (s *Server) GetDelegators(ctx context.Context, req *types.GetDelegatorsRequest) (*types.GetDelegatorsReply, error) {
-	result, err := s.stakingService.GetDelegators(ctx)
+	var result []*types.Delegator
+	var err error
+	if req.Validator != "" {
+		result, err = s.stakingService.GetDelegatorsByValidator(ctx, common.HexToAddress(req.Validator))
+	} else {
+		result, err = s.stakingService.GetDelegators(ctx)
+	}
 	if err != nil {
 		return nil, err
 	}

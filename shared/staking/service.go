@@ -26,8 +26,7 @@ type Service struct {
 	eth     *ethclient.Client
 	staking *abigen.Staking
 	// state
-	delegators []*types.Delegator
-	chains     []*types.Chain
+	chains []*types.Chain
 }
 
 func NewService() *Service {
@@ -56,10 +55,15 @@ func (s *Service) refreshRecentDelegators() {
 		var err error
 		select {
 		case <-updateDelegatorsTick:
-			s.delegators, err = s.getDelegators(context.Background())
-			if err != nil {
-				log.Errorf("failed to refresh recent delegators: %+v", err)
-			}
+			//newDelegators := make(map[common.Address][]*types.Delegator)
+			//for validator := range s.delegators {
+			//	delegators, err := s.getDelegators(context.Background(), []common.Address{validator})
+			//	if err != nil {
+			//		log.Errorf("failed to refresh recent delegators: %+v", err)
+			//	}
+			//	newDelegators[validator] = delegators
+			//}
+			//s.delegators = newDelegators
 		case <-updateChainsTick:
 			s.chains, err = s.GetChains(context.Background())
 			if err != nil {
@@ -159,8 +163,8 @@ func (s *Service) GetChain(ctx context.Context, chain string) (*types.Chain, err
 	return nil, fmt.Errorf("unknown chain (%s)", chain)
 }
 
-func (s *Service) getDelegators(ctx context.Context) (result []*types.Delegator, err error) {
-	it, err := s.staking.FilterDelegated(&bind.FilterOpts{Context: ctx, Start: uint64(0)}, nil, nil)
+func (s *Service) getDelegators(ctx context.Context, validators []common.Address) (result []*types.Delegator, err error) {
+	it, err := s.staking.FilterDelegated(&bind.FilterOpts{Context: ctx, Start: uint64(0)}, validators, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -181,10 +185,10 @@ func (s *Service) getDelegators(ctx context.Context) (result []*types.Delegator,
 	}), nil
 }
 
+func (s *Service) GetDelegatorsByValidator(ctx context.Context, validator common.Address) (result []*types.Delegator, err error) {
+	return s.getDelegators(ctx, []common.Address{validator})
+}
+
 func (s *Service) GetDelegators(ctx context.Context) (result []*types.Delegator, err error) {
-	if s.delegators != nil {
-		return s.delegators, nil
-	}
-	s.delegators, err = s.getDelegators(ctx)
-	return s.delegators, err
+	return s.getDelegators(ctx, []common.Address{})
 }

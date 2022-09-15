@@ -61,6 +61,7 @@ message GetChainsReply {
 }
 
 message GetDelegatorsRequest {
+  string validator = 1;
 }
 message GetDelegatorsReply {
   repeated Delegator delegators = 1;
