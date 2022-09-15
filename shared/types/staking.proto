@@ -7,6 +7,29 @@ option go_package = "./shared/types;types";
 
 package com.ankr;
 
+message ChainNativeCurrency {
+  string name = 1;
+  string symbol = 2;
+  uint32 decimals = 3;
+}
+
+message ChainExplorer {
+  string name = 1;
+  string url = 2;
+  string standard = 3;
+}
+
+message Chain {
+  uint64 chain_id = 1;
+  string project_url = 2;
+  string name = 3;
+  string short_name = 4;
+  repeated string rpc = 5;
+  repeated string faucet = 6;
+  ChainNativeCurrency native_currency = 7;
+  repeated ChainExplorer explorer = 8;
+}
+
 message Delegator {
   string address = 1;
   string amount = 2;
@@ -23,7 +46,17 @@ message Delegator {
  **/
 
 service StakingGateway {
+  rpc GetChains(GetChainsRequest) returns (GetChainsReply);
   rpc GetDelegators(GetDelegatorsRequest) returns (GetDelegatorsReply);
+}
+
+message GetChainsRequest {
+  uint32 offset = 1;
+  uint32 size = 2;
+}
+message GetChainsReply {
+  repeated Chain chains = 1;
+  bool has_more = 2;
 }
 
 message GetDelegatorsRequest {

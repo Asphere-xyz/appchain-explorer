@@ -23,3 +23,5 @@ http:
       # StakingGateway
     - selector: com.ankr.StakingGateway.GetDelegators
       get: /v1alpha/staking/delegators
+    - selector: com.ankr.StakingGateway.GetChains
+      get: /v1alpha/staking/chains

@@ -9,6 +9,7 @@ import (
 type Config struct {
 	Eth1Url         string
 	StakingContract common.Address
+	ChainListUrl    string
 }
 
 func (c *Config) ParseFromViper(v *viper.Viper) error {
@@ -19,6 +20,7 @@ func (c *Config) ParseFromViper(v *viper.Viper) error {
 		return fmt.Errorf("bad staking contract address (%s)", rawStakingContract)
 	}
 	c.StakingContract = stakingContract
+	c.ChainListUrl = viperGetOrDefault(v, "staking.chain-list-url", "https://raw.githubusercontent.com/node-real/bnbchainlist/main/utils/chains.json")
 	return nil
 }
 

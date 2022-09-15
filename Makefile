@@ -11,11 +11,11 @@ cook_env:
 	cd $(GOPATH)/src/github.com/ethereum/go-ethereum && make && make devtools && cd -
 
 .PHONY: schema
-create_schema:
+schema:
 	bash ./schema.bash
 
 .PHONY: proto
-build_proto:
+proto:
 	protoc -I=shared/types --gofast_out=plugins=grpc:./ shared/types/*.proto
 	protoc -I=shared/types --gogo_out=plugins=grpc:./ --grpc-gateway_opt grpc_api_configuration=./shared/types/gateway.yaml --grpc-gateway_out=allow_patch_feature=false:./ shared/types/gateway.proto shared/types/staking.proto
 
