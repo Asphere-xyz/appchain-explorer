@@ -17,6 +17,7 @@ import (
 	"io/ioutil"
 	"math/big"
 	"net/http"
+	"sort"
 	"strings"
 	"time"
 )
@@ -163,26 +164,37 @@ func (s *Service) GetChain(ctx context.Context, chain string) (*types.Chain, err
 	return nil, fmt.Errorf("unknown chain (%s)", chain)
 }
 
-func (s *Service) getDelegators(ctx context.Context, validators []common.Address) (result []*types.Delegator, err error) {
+func (s *Service) getDelegators(ctx context.Context, validators []common.Address) (result SortedDelegators, err error) {
 	it, err := s.staking.FilterDelegated(&bind.FilterOpts{Context: ctx, Start: uint64(0)}, validators, nil)
 	if err != nil {
 		return nil, err
 	}
-	delegators := make(map[common.Address]*big.Int)
+	type delegator struct {
+		amount *big.Int
+		epoch  uint64
+	}
+	delegators := make(map[common.Address]delegator)
 	for it.Next() {
-		balance := delegators[it.Event.Staker]
-		if balance == nil {
-			balance = big.NewInt(0)
+		del := delegators[it.Event.Staker]
+		if del.amount == nil {
+			del.amount = big.NewInt(0)
 		}
-		balance.Add(balance, it.Event.Amount)
-		delegators[it.Event.Staker] = balance
+		del.amount.Add(del.amount, it.Event.Amount)
+		del.epoch = it.Event.Epoch
+		delegators[it.Event.Staker] = del
 	}
 	if it.Error() != nil {
 		return nil, it.Error()
 	}
-	return lo.MapToSlice(delegators, func(k common.Address, v *big.Int) *types.Delegator {
-		return &types.Delegator{Address: k.Hex(), Amount: decimal.NewFromBigInt(v, -18).String()}
-	}), nil
+	result = lo.MapToSlice(delegators, func(k common.Address, v delegator) *types.Delegator {
+		return &types.Delegator{
+			Address: k.Hex(),
+			Amount:  decimal.NewFromBigInt(v.amount, -18).String(),
+			Epoch:   v.epoch,
+		}
+	})
+	sort.Sort(result)
+	return result, nil
 }
 
 func (s *Service) GetDelegatorsByValidator(ctx context.Context, validator common.Address) (result []*types.Delegator, err error) {
