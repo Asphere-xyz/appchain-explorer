@@ -127,6 +127,9 @@ func (s *Service) GetTransactionByHash(ctx context.Context, txHash string) (*typ
 
 func (s *Service) getBlockWithTxsCount(ctx context.Context, block *entity.Block) (*types.BlockDetails, error) {
 	result := blockDetailsToProto(block)
+	if result == nil {
+		return nil, nil
+	}
 	count, err := s.CountTxsInBlock(ctx, int64(result.BlockNumber))
 	if err != nil {
 		return nil, err
