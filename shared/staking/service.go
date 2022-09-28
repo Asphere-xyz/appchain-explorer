@@ -5,10 +5,13 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/Ankr-network/ankr-protocol/shared"
+	"github.com/Ankr-network/ankr-protocol/shared/database"
 	"github.com/Ankr-network/ankr-protocol/shared/staking/abigen"
 	"github.com/Ankr-network/ankr-protocol/shared/types"
+	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
+	types2 "github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/pkg/errors"
 	"github.com/samber/lo"
@@ -23,6 +26,8 @@ import (
 )
 
 type Service struct {
+	state *database.StateDb
+	// start
 	config  *Config
 	eth     *ethclient.Client
 	staking *abigen.Staking
@@ -30,8 +35,8 @@ type Service struct {
 	chains []*types.Chain
 }
 
-func NewService() *Service {
-	return &Service{}
+func NewService(state *database.StateDb) *Service {
+	return &Service{state: state}
 }
 
 func (s *Service) Start(cp shared.IConfigProvider) (err error) {
@@ -45,6 +50,11 @@ func (s *Service) Start(cp shared.IConfigProvider) (err error) {
 		return errors.Wrapf(err, "failed to connect to Web3 node (%s)", config.Eth1Url)
 	}
 	s.staking, _ = abigen.NewStaking(config.StakingContract, s.eth)
+	go func() {
+		if err := s.backgroundWorker(); err != nil {
+			log.Fatalf("failed to start background worker: %+v", err)
+		}
+	}()
 	go s.refreshRecentDelegators()
 	return nil
 }
@@ -72,6 +82,118 @@ func (s *Service) refreshRecentDelegators() {
 			}
 		}
 	}
+}
+
+func (s *Service) backgroundWorker() error {
+	ctx := context.TODO()
+	for {
+		hasMore, err := s.processEventLogs(ctx)
+		if err != nil {
+			return err
+		} else if hasMore {
+			continue
+		}
+		time.Sleep(30 * time.Second)
+	}
+}
+
+func (s *Service) processEventLogs(ctx context.Context) (hasMore bool, err error) {
+	lastAffectedBlock := s.state.GetLastAffectedBlock(ctx)
+	const confirmationBlocks = 10
+	latestKnownBlock, err := s.eth.BlockNumber(context.TODO())
+	if err != nil {
+		return false, err
+	}
+	const processBatch = 100_000
+	fromBlock := lastAffectedBlock
+	toBlock := fromBlock + processBatch
+	if toBlock > latestKnownBlock-confirmationBlocks {
+		toBlock = latestKnownBlock - confirmationBlocks
+	} else {
+		hasMore = true
+	}
+	logs, err := s.eth.FilterLogs(context.TODO(), ethereum.FilterQuery{
+		FromBlock: big.NewInt(int64(fromBlock)),
+		ToBlock:   big.NewInt(int64(toBlock)),
+		Addresses: []common.Address{
+			s.config.StakingContract,
+		},
+	})
+	s.state.NewPipeline()
+	defer func() {
+		if err != nil {
+			s.state.CancelPipline()
+		} else {
+			err = s.state.CommitPipeline(ctx, toBlock)
+		}
+	}()
+	for _, l := range logs {
+		if err = s.processEventLog(ctx, l); err != nil {
+			return false, err
+		}
+	}
+	return
+}
+
+func (s *Service) processEventLog(ctx context.Context, l types2.Log) error {
+	if event, _ := s.staking.ParseValidatorAdded(l); event != nil {
+		val, _, err := s.state.AddValidator(ctx, event)
+		if err != nil {
+			return err
+		}
+		log.WithFields(logValidatorFields(val)).Infof("validator added")
+		return nil
+	}
+	if event, _ := s.staking.ParseValidatorModified(l); event != nil {
+		val, _, err := s.state.ModifyValidator(ctx, event)
+		if err != nil {
+			return err
+		}
+		log.WithFields(logValidatorFields(val)).Infof("validator modified")
+		return nil
+	}
+	if event, _ := s.staking.ParseValidatorRemoved(l); event != nil {
+		val, _, err := s.state.RemoveValidator(ctx, event)
+		if err != nil {
+			return err
+		}
+		log.WithFields(logValidatorFields(val)).Infof("validator removed")
+		return nil
+	}
+	if event, _ := s.staking.ParseValidatorSlashed(l); event != nil {
+		val, err := s.state.SlashValidator(ctx, event)
+		if err != nil {
+			return err
+		}
+		log.WithFields(logSlashingFields(val)).Infof("validator slashed")
+		return nil
+	}
+	if event, _ := s.staking.ParseValidatorJailed(l); event != nil {
+		val, _, err := s.state.JailValidator(ctx, event)
+		if err != nil {
+			return err
+		}
+		log.WithFields(logValidatorFields(val)).Infof("validator slashed")
+		return nil
+	}
+	if event, _ := s.staking.ParseValidatorReleased(l); event != nil {
+		val, _, err := s.state.ReleaseValidator(ctx, event)
+		if err != nil {
+			return err
+		}
+		log.WithFields(logValidatorFields(val)).Infof("validator released")
+		return nil
+	}
+	if event, _ := s.staking.ParseValidatorDeposited(l); event != nil {
+		val, err := s.state.DepositValidator(ctx, event)
+		if err != nil {
+			return err
+		}
+		log.WithFields(logDepositFields(val)).Infof("validator deposited")
+		return nil
+	}
+	log.WithField("topic", l.Topics[0]).Warnf("not supported event type")
+	return nil
 }
 
 type chainListResponse struct {
@@ -195,6 +317,22 @@ func (s *Service) getDelegators(ctx context.Context, validators []common.Address
 	})
 	sort.Sort(result)
 	return result, nil
+}
+
+func (s *Service) GetValidators(ctx context.Context) (result []*types.Validator, err error) {
+	return s.state.GetValidators(ctx)
+}
+
+func (s *Service) GetValidatorSlashings(ctx context.Context, validator common.Address, offset, size uint32) (result []*types.ValidatorSlashing, err error) {
+	return s.state.GetValidatorSlashings(ctx, validator, int64(offset), int64(size))
+}
+
+func (s *Service) GetValidatorHistories(ctx context.Context, validator common.Address, offset, size uint32) (result []*types.ValidatorHistory, err error) {
+	return s.state.GetValidatorHistories(ctx, validator, int64(offset), int64(size))
+}
+
+func (s *Service) GetValidatorDeposits(ctx context.Context, validator common.Address, offset, size uint32) (result []*types.ValidatorDeposit, err error) {
+	return s.state.GetValidatorDeposits(ctx, validator, int64(offset), int64(size))
 }
 
 func (s *Service) GetDelegatorsByValidator(ctx context.Context, validator common.Address) (result []*types.Delegator, err error) {

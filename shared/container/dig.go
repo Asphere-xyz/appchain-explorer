@@ -54,6 +54,7 @@ func newDefaultEmptyContainer() IContainer {
 func NewContainer() IContainer {
 	di := newDefaultEmptyContainer()
 	di.MustProvide(database.NewService)
+	di.MustProvide(database.NewStateDb)
 	di.MustProvide(gateway.NewServer)
 	di.MustProvide(websocket.NewServer)
 	di.MustProvide(staking.NewService)
@@ -62,6 +63,7 @@ func NewContainer() IContainer {
 
 func MustStartDefault(di IContainer) {
 	di.MustInvoke(func(s *database.Service) error { return di.Invoke(s.Start) })
+	di.MustInvoke(func(s *database.StateDb) error { return di.Invoke(s.Start) })
 	di.MustInvoke(func(s *gateway.Server) error { return di.Invoke(s.Start) })
 	di.MustInvoke(func(s *websocket.Server) error { return di.Invoke(s.Start) })
 	di.MustInvoke(func(s *staking.Service) error { return di.Invoke(s.Start) })

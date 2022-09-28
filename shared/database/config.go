@@ -5,11 +5,15 @@ import (
 )
 
 type Config struct {
-	PostgresUrl string
+	PostgresUrl   string
+	RedisUrl      string
+	RedisPassword string
 }
 
 func (c *Config) ParseFromViper(v *viper.Viper) error {
 	c.PostgresUrl = viperGetOrDefault(v, "database.postgres-url", "postgres://postgres:@rpc.dev-01.bas.ankr.com:7432/blockscout?sslmode=disable")
+	c.RedisUrl = viperGetOrDefault(v, "database.redis-url", "localhost:6379")
+	c.RedisPassword = viperGetOrDefault(v, "database.redis-password", "123456")
 	return nil
 }
 

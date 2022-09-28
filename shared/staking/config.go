@@ -17,7 +17,7 @@ type Config struct {
 }
 
 func (c *Config) ParseFromViper(v *viper.Viper) error {
-	c.Eth1Url = viperGetOrDefault(v, "staking.eth1-url", "https://rpc.dev-01.bas.ankr.com/")
+	c.Eth1Url = viperGetOrDefault(v, "staking.eth1-url", "ws://rpc.dev-01.bas.ankr.com:8546")
 	rawStakingContract := viperGetOrDefault(v, "staking.staking-contract", "0x0000000000000000000000000000000000001000")
 	stakingContract := common.HexToAddress(rawStakingContract)
 	if stakingContract == (common.Address{}) {

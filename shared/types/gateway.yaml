@@ -21,6 +21,14 @@ http:
       get: /v1alpha/address/transfers/{address}
     - selector: com.ankr.BlockscoutGateway.GetTokenTransfersByAddress
       # StakingGateway
+    - selector: com.ankr.StakingGateway.GetValidators
+      get: /v1alpha/staking/validators
+    - selector: com.ankr.StakingGateway.GetValidatorHistory
+      get: /v1alpha/staking/validators/{validator}/history
+    - selector: com.ankr.StakingGateway.GetValidatorSlashings
+      get: /v1alpha/staking/validators/{validator}/slashing
+    - selector: com.ankr.StakingGateway.GetValidatorDeposits
+      get: /v1alpha/staking/validators/{validator}/deposits
     - selector: com.ankr.StakingGateway.GetDelegators
       get: /v1alpha/staking/delegators
       additional_bindings:

@@ -6,6 +6,50 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 )
 
+func (s *Server) GetValidators(ctx context.Context, req *types.GetValidatorsRequest) (*types.GetValidatorsReply, error) {
+	result, err := s.stakingService.GetValidators(ctx)
+	if err != nil {
+		return nil, err
+	}
+	return &types.GetValidatorsReply{Validators: result}, nil
+}
+
+func (s *Server) GetValidatorHistory(ctx context.Context, req *types.GetValidatorHistoryRequest) (*types.GetValidatorHistoryReply, error) {
+	if req.Size_ == 0 || req.Size_ > 1000 {
+		req.Size_ = 1000
+	}
+	result, err := s.stakingService.GetValidatorHistories(ctx, common.HexToAddress(req.Validator), req.Offset, req.Size_)
+	if err != nil {
+		return nil, err
+	}
+	newSize, hasMore := checkHasMore(req.Size_, len(result))
+	return &types.GetValidatorHistoryReply{ValidatorHistories: result[:newSize], HasMore: hasMore}, nil
+}
+
+func (s *Server) GetValidatorSlashings(ctx context.Context, req *types.GetValidatorSlashingsRequest) (*types.GetValidatorSlashingsReply, error) {
+	if req.Size_ == 0 || req.Size_ > 1000 {
+		req.Size_ = 1000
+	}
+	result, err := s.stakingService.GetValidatorSlashings(ctx, common.HexToAddress(req.Validator), req.Offset, req.Size_)
+	if err != nil {
+		return nil, err
+	}
+	newSize, hasMore := checkHasMore(req.Size_, len(result))
+	return &types.GetValidatorSlashingsReply{ValidatorSlashings: result[:newSize], HasMore: hasMore}, nil
+}
+
+func (s *Server) GetValidatorDeposits(ctx context.Context, req *types.GetValidatorDepositsRequest) (*types.GetValidatorDepositsReply, error) {
+	if req.Size_ == 0 || req.Size_ > 1000 {
+		req.Size_ = 1000
+	}
+	result, err := s.stakingService.GetValidatorDeposits(ctx, common.HexToAddress(req.Validator), req.Offset, req.Size_)
+	if err != nil {
+		return nil, err
+	}
+	newSize, hasMore := checkHasMore(req.Size_, len(result))
+	return &types.GetValidatorDepositsReply{ValidatorDeposits: result[:newSize], HasMore: hasMore}, nil
+}
+
 func (s *Server) GetDelegators(ctx context.Context, req *types.GetDelegatorsRequest) (*types.GetDelegatorsReply, error) {
 	var result []*types.Delegator
 	var err error

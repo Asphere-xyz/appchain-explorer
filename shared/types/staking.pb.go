@@ -24,6 +24,37 @@ var _ = math.Inf
 // proto package needs to be updated.
 const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 
+type ValidatorStatus int32
+
+const (
+	ValidatorStatus_VALIDATOR_STATUS_NOT_FOUND ValidatorStatus = 0
+	ValidatorStatus_VALIDATOR_STATUS_ACTIVE    ValidatorStatus = 1
+	ValidatorStatus_VALIDATOR_STATUS_PENDING   ValidatorStatus = 2
+	ValidatorStatus_VALIDATOR_STATUS_JAIL      ValidatorStatus = 3
+)
+
+var ValidatorStatus_name = map[int32]string{
+	0: "VALIDATOR_STATUS_NOT_FOUND",
+	1: "VALIDATOR_STATUS_ACTIVE",
+	2: "VALIDATOR_STATUS_PENDING",
+	3: "VALIDATOR_STATUS_JAIL",
+}
+
+var ValidatorStatus_value = map[string]int32{
+	"VALIDATOR_STATUS_NOT_FOUND": 0,
+	"VALIDATOR_STATUS_ACTIVE":    1,
+	"VALIDATOR_STATUS_PENDING":   2,
+	"VALIDATOR_STATUS_JAIL":      3,
+}
+
+func (x ValidatorStatus) String() string {
+	return proto.EnumName(ValidatorStatus_name, int32(x))
+}
+
+func (ValidatorStatus) EnumDescriptor() ([]byte, []int) {
+	return fileDescriptor_289e7c8aea278311, []int{0}
+}
+
 type ChainNativeCurrency struct {
 	Name                 string   `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
 	Symbol               string   `protobuf:"bytes,2,opt,name=symbol,proto3" json:"symbol,omitempty"`
@@ -226,6 +257,270 @@ func (m *Chain) GetExplorer() []*ChainExplorer {
 	return nil
 }
 
+type Validator struct {
+	Address              string          `protobuf:"bytes,1,opt,name=address,proto3" json:"address,omitempty"`
+	Owner                string          `protobuf:"bytes,2,opt,name=owner,proto3" json:"owner,omitempty"`
+	Status               ValidatorStatus `protobuf:"varint,3,opt,name=status,proto3,enum=com.ankr.ValidatorStatus" json:"status,omitempty"`
+	Commission           uint32          `protobuf:"varint,4,opt,name=commission,proto3" json:"commission,omitempty"`
+	XXX_NoUnkeyedLiteral struct{}        `json:"-"`
+	XXX_unrecognized     []byte          `json:"-"`
+	XXX_sizecache        int32           `json:"-"`
+}
+
+func (m *Validator) Reset()         { *m = Validator{} }
+func (m *Validator) String() string { return proto.CompactTextString(m) }
+func (*Validator) ProtoMessage()    {}
+func (*Validator) Descriptor() ([]byte, []int) {
+	return fileDescriptor_289e7c8aea278311, []int{3}
+}
+func (m *Validator) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_Validator.Unmarshal(m, b)
+}
+func (m *Validator) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_Validator.Marshal(b, m, deterministic)
+}
+func (m *Validator) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_Validator.Merge(m, src)
+}
+func (m *Validator) XXX_Size() int {
+	return xxx_messageInfo_Validator.Size(m)
+}
+func (m *Validator) XXX_DiscardUnknown() {
+	xxx_messageInfo_Validator.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_Validator proto.InternalMessageInfo
+
+func (m *Validator) GetAddress() string {
+	if m != nil {
+		return m.Address
+	}
+	return ""
+}
+
+func (m *Validator) GetOwner() string {
+	if m != nil {
+		return m.Owner
+	}
+	return ""
+}
+
+func (m *Validator) GetStatus() ValidatorStatus {
+	if m != nil {
+		return m.Status
+	}
+	return ValidatorStatus_VALIDATOR_STATUS_NOT_FOUND
+}
+
+func (m *Validator) GetCommission() uint32 {
+	if m != nil {
+		return m.Commission
+	}
+	return 0
+}
+
+type ValidatorHistory struct {
+	Address              string     `protobuf:"bytes,1,opt,name=address,proto3" json:"address,omitempty"`
+	Changes              *Validator `protobuf:"bytes,2,opt,name=changes,proto3" json:"changes,omitempty"`
+	TransactionHash      string     `protobuf:"bytes,3,opt,name=transaction_hash,json=transactionHash,proto3" json:"transaction_hash,omitempty"`
+	BlockNumber          uint64     `protobuf:"varint,4,opt,name=block_number,json=blockNumber,proto3" json:"block_number,omitempty"`
+	XXX_NoUnkeyedLiteral struct{}   `json:"-"`
+	XXX_unrecognized     []byte     `json:"-"`
+	XXX_sizecache        int32      `json:"-"`
+}
+
+func (m *ValidatorHistory) Reset()         { *m = ValidatorHistory{} }
+func (m *ValidatorHistory) String() string { return proto.CompactTextString(m) }
+func (*ValidatorHistory) ProtoMessage()    {}
+func (*ValidatorHistory) Descriptor() ([]byte, []int) {
+	return fileDescriptor_289e7c8aea278311, []int{4}
+}
+func (m *ValidatorHistory) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_ValidatorHistory.Unmarshal(m, b)
+}
+func (m *ValidatorHistory) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_ValidatorHistory.Marshal(b, m, deterministic)
+}
+func (m *ValidatorHistory) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_ValidatorHistory.Merge(m, src)
+}
+func (m *ValidatorHistory) XXX_Size() int {
+	return xxx_messageInfo_ValidatorHistory.Size(m)
+}
+func (m *ValidatorHistory) XXX_DiscardUnknown() {
+	xxx_messageInfo_ValidatorHistory.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_ValidatorHistory proto.InternalMessageInfo
+
+func (m *ValidatorHistory) GetAddress() string {
+	if m != nil {
+		return m.Address
+	}
+	return ""
+}
+
+func (m *ValidatorHistory) GetChanges() *Validator {
+	if m != nil {
+		return m.Changes
+	}
+	return nil
+}
+
+func (m *ValidatorHistory) GetTransactionHash() string {
+	if m != nil {
+		return m.TransactionHash
+	}
+	return ""
+}
+
+func (m *ValidatorHistory) GetBlockNumber() uint64 {
+	if m != nil {
+		return m.BlockNumber
+	}
+	return 0
+}
+
+type ValidatorDeposit struct {
+	Validator            string   `protobuf:"bytes,1,opt,name=validator,proto3" json:"validator,omitempty"`
+	Amount               string   `protobuf:"bytes,2,opt,name=amount,proto3" json:"amount,omitempty"`
+	Epoch                uint64   `protobuf:"varint,3,opt,name=epoch,proto3" json:"epoch,omitempty"`
+	TransactionHash      string   `protobuf:"bytes,4,opt,name=transaction_hash,json=transactionHash,proto3" json:"transaction_hash,omitempty"`
+	BlockNumber          uint64   `protobuf:"varint,5,opt,name=block_number,json=blockNumber,proto3" json:"block_number,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *ValidatorDeposit) Reset()         { *m = ValidatorDeposit{} }
+func (m *ValidatorDeposit) String() string { return proto.CompactTextString(m) }
+func (*ValidatorDeposit) ProtoMessage()    {}
+func (*ValidatorDeposit) Descriptor() ([]byte, []int) {
+	return fileDescriptor_289e7c8aea278311, []int{5}
+}
+func (m *ValidatorDeposit) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_ValidatorDeposit.Unmarshal(m, b)
+}
+func (m *ValidatorDeposit) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_ValidatorDeposit.Marshal(b, m, deterministic)
+}
+func (m *ValidatorDeposit) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_ValidatorDeposit.Merge(m, src)
+}
+func (m *ValidatorDeposit) XXX_Size() int {
+	return xxx_messageInfo_ValidatorDeposit.Size(m)
+}
+func (m *ValidatorDeposit) XXX_DiscardUnknown() {
+	xxx_messageInfo_ValidatorDeposit.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_ValidatorDeposit proto.InternalMessageInfo
+
+func (m *ValidatorDeposit) GetValidator() string {
+	if m != nil {
+		return m.Validator
+	}
+	return ""
+}
+
+func (m *ValidatorDeposit) GetAmount() string {
+	if m != nil {
+		return m.Amount
+	}
+	return ""
+}
+
+func (m *ValidatorDeposit) GetEpoch() uint64 {
+	if m != nil {
+		return m.Epoch
+	}
+	return 0
+}
+
+func (m *ValidatorDeposit) GetTransactionHash() string {
+	if m != nil {
+		return m.TransactionHash
+	}
+	return ""
+}
+
+func (m *ValidatorDeposit) GetBlockNumber() uint64 {
+	if m != nil {
+		return m.BlockNumber
+	}
+	return 0
+}
+
+type ValidatorSlashing struct {
+	Validator            string   `protobuf:"bytes,1,opt,name=validator,proto3" json:"validator,omitempty"`
+	Epoch                uint64   `protobuf:"varint,2,opt,name=epoch,proto3" json:"epoch,omitempty"`
+	Slashings            uint32   `protobuf:"varint,3,opt,name=slashings,proto3" json:"slashings,omitempty"`
+	TransactionHash      string   `protobuf:"bytes,4,opt,name=transaction_hash,json=transactionHash,proto3" json:"transaction_hash,omitempty"`
+	BlockNumber          uint64   `protobuf:"varint,5,opt,name=block_number,json=blockNumber,proto3" json:"block_number,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *ValidatorSlashing) Reset()         { *m = ValidatorSlashing{} }
+func (m *ValidatorSlashing) String() string { return proto.CompactTextString(m) }
+func (*ValidatorSlashing) ProtoMessage()    {}
+func (*ValidatorSlashing) Descriptor() ([]byte, []int) {
+	return fileDescriptor_289e7c8aea278311, []int{6}
+}
+func (m *ValidatorSlashing) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_ValidatorSlashing.Unmarshal(m, b)
+}
+func (m *ValidatorSlashing) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_ValidatorSlashing.Marshal(b, m, deterministic)
+}
+func (m *ValidatorSlashing) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_ValidatorSlashing.Merge(m, src)
+}
+func (m *ValidatorSlashing) XXX_Size() int {
+	return xxx_messageInfo_ValidatorSlashing.Size(m)
+}
+func (m *ValidatorSlashing) XXX_DiscardUnknown() {
+	xxx_messageInfo_ValidatorSlashing.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_ValidatorSlashing proto.InternalMessageInfo
+
+func (m *ValidatorSlashing) GetValidator() string {
+	if m != nil {
+		return m.Validator
+	}
+	return ""
+}
+
+func (m *ValidatorSlashing) GetEpoch() uint64 {
+	if m != nil {
+		return m.Epoch
+	}
+	return 0
+}
+
+func (m *ValidatorSlashing) GetSlashings() uint32 {
+	if m != nil {
+		return m.Slashings
+	}
+	return 0
+}
+
+func (m *ValidatorSlashing) GetTransactionHash() string {
+	if m != nil {
+		return m.TransactionHash
+	}
+	return ""
+}
+
+func (m *ValidatorSlashing) GetBlockNumber() uint64 {
+	if m != nil {
+		return m.BlockNumber
+	}
+	return 0
+}
+
 type Delegator struct {
 	Address              string   `protobuf:"bytes,1,opt,name=address,proto3" json:"address,omitempty"`
 	Amount               string   `protobuf:"bytes,2,opt,name=amount,proto3" json:"amount,omitempty"`
@@ -239,7 +534,7 @@ func (m *Delegator) Reset()         { *m = Delegator{} }
 func (m *Delegator) String() string { return proto.CompactTextString(m) }
 func (*Delegator) ProtoMessage()    {}
 func (*Delegator) Descriptor() ([]byte, []int) {
-	return fileDescriptor_289e7c8aea278311, []int{3}
+	return fileDescriptor_289e7c8aea278311, []int{7}
 }
 func (m *Delegator) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_Delegator.Unmarshal(m, b)
@@ -280,6 +575,398 @@ func (m *Delegator) GetEpoch() uint64 {
 	return 0
 }
 
+type GetValidatorsRequest struct {
+	Offset               uint32   `protobuf:"varint,1,opt,name=offset,proto3" json:"offset,omitempty"`
+	Size_                uint32   `protobuf:"varint,2,opt,name=size,proto3" json:"size,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *GetValidatorsRequest) Reset()         { *m = GetValidatorsRequest{} }
+func (m *GetValidatorsRequest) String() string { return proto.CompactTextString(m) }
+func (*GetValidatorsRequest) ProtoMessage()    {}
+func (*GetValidatorsRequest) Descriptor() ([]byte, []int) {
+	return fileDescriptor_289e7c8aea278311, []int{8}
+}
+func (m *GetValidatorsRequest) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_GetValidatorsRequest.Unmarshal(m, b)
+}
+func (m *GetValidatorsRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_GetValidatorsRequest.Marshal(b, m, deterministic)
+}
+func (m *GetValidatorsRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_GetValidatorsRequest.Merge(m, src)
+}
+func (m *GetValidatorsRequest) XXX_Size() int {
+	return xxx_messageInfo_GetValidatorsRequest.Size(m)
+}
+func (m *GetValidatorsRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_GetValidatorsRequest.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_GetValidatorsRequest proto.InternalMessageInfo
+
+func (m *GetValidatorsRequest) GetOffset() uint32 {
+	if m != nil {
+		return m.Offset
+	}
+	return 0
+}
+
+func (m *GetValidatorsRequest) GetSize_() uint32 {
+	if m != nil {
+		return m.Size_
+	}
+	return 0
+}
+
+type GetValidatorsReply struct {
+	Validators           []*Validator `protobuf:"bytes,1,rep,name=validators,proto3" json:"validators,omitempty"`
+	HasMore              bool         `protobuf:"varint,2,opt,name=has_more,json=hasMore,proto3" json:"has_more,omitempty"`
+	XXX_NoUnkeyedLiteral struct{}     `json:"-"`
+	XXX_unrecognized     []byte       `json:"-"`
+	XXX_sizecache        int32        `json:"-"`
+}
+
+func (m *GetValidatorsReply) Reset()         { *m = GetValidatorsReply{} }
+func (m *GetValidatorsReply) String() string { return proto.CompactTextString(m) }
+func (*GetValidatorsReply) ProtoMessage()    {}
+func (*GetValidatorsReply) Descriptor() ([]byte, []int) {
+	return fileDescriptor_289e7c8aea278311, []int{9}
+}
+func (m *GetValidatorsReply) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_GetValidatorsReply.Unmarshal(m, b)
+}
+func (m *GetValidatorsReply) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_GetValidatorsReply.Marshal(b, m, deterministic)
+}
+func (m *GetValidatorsReply) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_GetValidatorsReply.Merge(m, src)
+}
+func (m *GetValidatorsReply) XXX_Size() int {
+	return xxx_messageInfo_GetValidatorsReply.Size(m)
+}
+func (m *GetValidatorsReply) XXX_DiscardUnknown() {
+	xxx_messageInfo_GetValidatorsReply.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_GetValidatorsReply proto.InternalMessageInfo
+
+func (m *GetValidatorsReply) GetValidators() []*Validator {
+	if m != nil {
+		return m.Validators
+	}
+	return nil
+}
+
+func (m *GetValidatorsReply) GetHasMore() bool {
+	if m != nil {
+		return m.HasMore
+	}
+	return false
+}
+
+type GetValidatorHistoryRequest struct {
+	Offset               uint32   `protobuf:"varint,1,opt,name=offset,proto3" json:"offset,omitempty"`
+	Size_                uint32   `protobuf:"varint,2,opt,name=size,proto3" json:"size,omitempty"`
+	Validator            string   `protobuf:"bytes,3,opt,name=validator,proto3" json:"validator,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *GetValidatorHistoryRequest) Reset()         { *m = GetValidatorHistoryRequest{} }
+func (m *GetValidatorHistoryRequest) String() string { return proto.CompactTextString(m) }
+func (*GetValidatorHistoryRequest) ProtoMessage()    {}
+func (*GetValidatorHistoryRequest) Descriptor() ([]byte, []int) {
+	return fileDescriptor_289e7c8aea278311, []int{10}
+}
+func (m *GetValidatorHistoryRequest) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_GetValidatorHistoryRequest.Unmarshal(m, b)
+}
+func (m *GetValidatorHistoryRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_GetValidatorHistoryRequest.Marshal(b, m, deterministic)
+}
+func (m *GetValidatorHistoryRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_GetValidatorHistoryRequest.Merge(m, src)
+}
+func (m *GetValidatorHistoryRequest) XXX_Size() int {
+	return xxx_messageInfo_GetValidatorHistoryRequest.Size(m)
+}
+func (m *GetValidatorHistoryRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_GetValidatorHistoryRequest.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_GetValidatorHistoryRequest proto.InternalMessageInfo
+
+func (m *GetValidatorHistoryRequest) GetOffset() uint32 {
+	if m != nil {
+		return m.Offset
+	}
+	return 0
+}
+
+func (m *GetValidatorHistoryRequest) GetSize_() uint32 {
+	if m != nil {
+		return m.Size_
+	}
+	return 0
+}
+
+func (m *GetValidatorHistoryRequest) GetValidator() string {
+	if m != nil {
+		return m.Validator
+	}
+	return ""
+}
+
+type GetValidatorHistoryReply struct {
+	ValidatorHistories   []*ValidatorHistory `protobuf:"bytes,1,rep,name=validator_histories,json=validatorHistories,proto3" json:"validator_histories,omitempty"`
+	HasMore              bool                `protobuf:"varint,2,opt,name=has_more,json=hasMore,proto3" json:"has_more,omitempty"`
+	XXX_NoUnkeyedLiteral struct{}            `json:"-"`
+	XXX_unrecognized     []byte              `json:"-"`
+	XXX_sizecache        int32               `json:"-"`
+}
+
+func (m *GetValidatorHistoryReply) Reset()         { *m = GetValidatorHistoryReply{} }
+func (m *GetValidatorHistoryReply) String() string { return proto.CompactTextString(m) }
+func (*GetValidatorHistoryReply) ProtoMessage()    {}
+func (*GetValidatorHistoryReply) Descriptor() ([]byte, []int) {
+	return fileDescriptor_289e7c8aea278311, []int{11}
+}
+func (m *GetValidatorHistoryReply) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_GetValidatorHistoryReply.Unmarshal(m, b)
+}
+func (m *GetValidatorHistoryReply) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_GetValidatorHistoryReply.Marshal(b, m, deterministic)
+}
+func (m *GetValidatorHistoryReply) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_GetValidatorHistoryReply.Merge(m, src)
+}
+func (m *GetValidatorHistoryReply) XXX_Size() int {
+	return xxx_messageInfo_GetValidatorHistoryReply.Size(m)
+}
+func (m *GetValidatorHistoryReply) XXX_DiscardUnknown() {
+	xxx_messageInfo_GetValidatorHistoryReply.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_GetValidatorHistoryReply proto.InternalMessageInfo
+
+func (m *GetValidatorHistoryReply) GetValidatorHistories() []*ValidatorHistory {
+	if m != nil {
+		return m.ValidatorHistories
+	}
+	return nil
+}
+
+func (m *GetValidatorHistoryReply) GetHasMore() bool {
+	if m != nil {
+		return m.HasMore
+	}
+	return false
+}
+
+type GetValidatorSlashingsRequest struct {
+	Offset               uint32   `protobuf:"varint,1,opt,name=offset,proto3" json:"offset,omitempty"`
+	Size_                uint32   `protobuf:"varint,2,opt,name=size,proto3" json:"size,omitempty"`
+	Validator            string   `protobuf:"bytes,3,opt,name=validator,proto3" json:"validator,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *GetValidatorSlashingsRequest) Reset()         { *m = GetValidatorSlashingsRequest{} }
+func (m *GetValidatorSlashingsRequest) String() string { return proto.CompactTextString(m) }
+func (*GetValidatorSlashingsRequest) ProtoMessage()    {}
+func (*GetValidatorSlashingsRequest) Descriptor() ([]byte, []int) {
+	return fileDescriptor_289e7c8aea278311, []int{12}
+}
+func (m *GetValidatorSlashingsRequest) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_GetValidatorSlashingsRequest.Unmarshal(m, b)
+}
+func (m *GetValidatorSlashingsRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_GetValidatorSlashingsRequest.Marshal(b, m, deterministic)
+}
+func (m *GetValidatorSlashingsRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_GetValidatorSlashingsRequest.Merge(m, src)
+}
+func (m *GetValidatorSlashingsRequest) XXX_Size() int {
+	return xxx_messageInfo_GetValidatorSlashingsRequest.Size(m)
+}
+func (m *GetValidatorSlashingsRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_GetValidatorSlashingsRequest.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_GetValidatorSlashingsRequest proto.InternalMessageInfo
+
+func (m *GetValidatorSlashingsRequest) GetOffset() uint32 {
+	if m != nil {
+		return m.Offset
+	}
+	return 0
+}
+
+func (m *GetValidatorSlashingsRequest) GetSize_() uint32 {
+	if m != nil {
+		return m.Size_
+	}
+	return 0
+}
+
+func (m *GetValidatorSlashingsRequest) GetValidator() string {
+	if m != nil {
+		return m.Validator
+	}
+	return ""
+}
+
+type GetValidatorSlashingsReply struct {
+	ValidatorSlashings   []*ValidatorSlashing `protobuf:"bytes,1,rep,name=validator_slashings,json=validatorSlashings,proto3" json:"validator_slashings,omitempty"`
+	HasMore              bool                 `protobuf:"varint,2,opt,name=has_more,json=hasMore,proto3" json:"has_more,omitempty"`
+	XXX_NoUnkeyedLiteral struct{}             `json:"-"`
+	XXX_unrecognized     []byte               `json:"-"`
+	XXX_sizecache        int32                `json:"-"`
+}
+
+func (m *GetValidatorSlashingsReply) Reset()         { *m = GetValidatorSlashingsReply{} }
+func (m *GetValidatorSlashingsReply) String() string { return proto.CompactTextString(m) }
+func (*GetValidatorSlashingsReply) ProtoMessage()    {}
+func (*GetValidatorSlashingsReply) Descriptor() ([]byte, []int) {
+	return fileDescriptor_289e7c8aea278311, []int{13}
+}
+func (m *GetValidatorSlashingsReply) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_GetValidatorSlashingsReply.Unmarshal(m, b)
+}
+func (m *GetValidatorSlashingsReply) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_GetValidatorSlashingsReply.Marshal(b, m, deterministic)
+}
+func (m *GetValidatorSlashingsReply) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_GetValidatorSlashingsReply.Merge(m, src)
+}
+func (m *GetValidatorSlashingsReply) XXX_Size() int {
+	return xxx_messageInfo_GetValidatorSlashingsReply.Size(m)
+}
+func (m *GetValidatorSlashingsReply) XXX_DiscardUnknown() {
+	xxx_messageInfo_GetValidatorSlashingsReply.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_GetValidatorSlashingsReply proto.InternalMessageInfo
+
+func (m *GetValidatorSlashingsReply) GetValidatorSlashings() []*ValidatorSlashing {
+	if m != nil {
+		return m.ValidatorSlashings
+	}
+	return nil
+}
+
+func (m *GetValidatorSlashingsReply) GetHasMore() bool {
+	if m != nil {
+		return m.HasMore
+	}
+	return false
+}
+
+type GetValidatorDepositsRequest struct {
+	Offset               uint32   `protobuf:"varint,1,opt,name=offset,proto3" json:"offset,omitempty"`
+	Size_                uint32   `protobuf:"varint,2,opt,name=size,proto3" json:"size,omitempty"`
+	Validator            string   `protobuf:"bytes,3,opt,name=validator,proto3" json:"validator,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *GetValidatorDepositsRequest) Reset()         { *m = GetValidatorDepositsRequest{} }
+func (m *GetValidatorDepositsRequest) String() string { return proto.CompactTextString(m) }
+func (*GetValidatorDepositsRequest) ProtoMessage()    {}
+func (*GetValidatorDepositsRequest) Descriptor() ([]byte, []int) {
+	return fileDescriptor_289e7c8aea278311, []int{14}
+}
+func (m *GetValidatorDepositsRequest) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_GetValidatorDepositsRequest.Unmarshal(m, b)
+}
+func (m *GetValidatorDepositsRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_GetValidatorDepositsRequest.Marshal(b, m, deterministic)
+}
+func (m *GetValidatorDepositsRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_GetValidatorDepositsRequest.Merge(m, src)
+}
+func (m *GetValidatorDepositsRequest) XXX_Size() int {
+	return xxx_messageInfo_GetValidatorDepositsRequest.Size(m)
+}
+func (m *GetValidatorDepositsRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_GetValidatorDepositsRequest.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_GetValidatorDepositsRequest proto.InternalMessageInfo
+
+func (m *GetValidatorDepositsRequest) GetOffset() uint32 {
+	if m != nil {
+		return m.Offset
+	}
+	return 0
+}
+
+func (m *GetValidatorDepositsRequest) GetSize_() uint32 {
+	if m != nil {
+		return m.Size_
+	}
+	return 0
+}
+
+func (m *GetValidatorDepositsRequest) GetValidator() string {
+	if m != nil {
+		return m.Validator
+	}
+	return ""
+}
+
+type GetValidatorDepositsReply struct {
+	ValidatorDeposits    []*ValidatorDeposit `protobuf:"bytes,1,rep,name=validator_deposits,json=validatorDeposits,proto3" json:"validator_deposits,omitempty"`
+	HasMore              bool                `protobuf:"varint,2,opt,name=has_more,json=hasMore,proto3" json:"has_more,omitempty"`
+	XXX_NoUnkeyedLiteral struct{}            `json:"-"`
+	XXX_unrecognized     []byte              `json:"-"`
+	XXX_sizecache        int32               `json:"-"`
+}
+
+func (m *GetValidatorDepositsReply) Reset()         { *m = GetValidatorDepositsReply{} }
+func (m *GetValidatorDepositsReply) String() string { return proto.CompactTextString(m) }
+func (*GetValidatorDepositsReply) ProtoMessage()    {}
+func (*GetValidatorDepositsReply) Descriptor() ([]byte, []int) {
+	return fileDescriptor_289e7c8aea278311, []int{15}
+}
+func (m *GetValidatorDepositsReply) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_GetValidatorDepositsReply.Unmarshal(m, b)
+}
+func (m *GetValidatorDepositsReply) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_GetValidatorDepositsReply.Marshal(b, m, deterministic)
+}
+func (m *GetValidatorDepositsReply) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_GetValidatorDepositsReply.Merge(m, src)
+}
+func (m *GetValidatorDepositsReply) XXX_Size() int {
+	return xxx_messageInfo_GetValidatorDepositsReply.Size(m)
+}
+func (m *GetValidatorDepositsReply) XXX_DiscardUnknown() {
+	xxx_messageInfo_GetValidatorDepositsReply.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_GetValidatorDepositsReply proto.InternalMessageInfo
+
+func (m *GetValidatorDepositsReply) GetValidatorDeposits() []*ValidatorDeposit {
+	if m != nil {
+		return m.ValidatorDeposits
+	}
+	return nil
+}
+
+func (m *GetValidatorDepositsReply) GetHasMore() bool {
+	if m != nil {
+		return m.HasMore
+	}
+	return false
+}
+
 type GetChainsRequest struct {
 	Offset               uint32   `protobuf:"varint,1,opt,name=offset,proto3" json:"offset,omitempty"`
 	Size_                uint32   `protobuf:"varint,2,opt,name=size,proto3" json:"size,omitempty"`
@@ -293,7 +980,7 @@ func (m *GetChainsRequest) Reset()         { *m = GetChainsRequest{} }
 func (m *GetChainsRequest) String() string { return proto.CompactTextString(m) }
 func (*GetChainsRequest) ProtoMessage()    {}
 func (*GetChainsRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_289e7c8aea278311, []int{4}
+	return fileDescriptor_289e7c8aea278311, []int{16}
 }
 func (m *GetChainsRequest) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_GetChainsRequest.Unmarshal(m, b)
@@ -346,7 +1033,7 @@ func (m *GetChainsReply) Reset()         { *m = GetChainsReply{} }
 func (m *GetChainsReply) String() string { return proto.CompactTextString(m) }
 func (*GetChainsReply) ProtoMessage()    {}
 func (*GetChainsReply) Descriptor() ([]byte, []int) {
-	return fileDescriptor_289e7c8aea278311, []int{5}
+	return fileDescriptor_289e7c8aea278311, []int{17}
 }
 func (m *GetChainsReply) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_GetChainsReply.Unmarshal(m, b)
@@ -391,7 +1078,7 @@ func (m *GetDelegatorsRequest) Reset()         { *m = GetDelegatorsRequest{} }
 func (m *GetDelegatorsRequest) String() string { return proto.CompactTextString(m) }
 func (*GetDelegatorsRequest) ProtoMessage()    {}
 func (*GetDelegatorsRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_289e7c8aea278311, []int{6}
+	return fileDescriptor_289e7c8aea278311, []int{18}
 }
 func (m *GetDelegatorsRequest) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_GetDelegatorsRequest.Unmarshal(m, b)
@@ -429,7 +1116,7 @@ func (m *GetDelegatorsReply) Reset()         { *m = GetDelegatorsReply{} }
 func (m *GetDelegatorsReply) String() string { return proto.CompactTextString(m) }
 func (*GetDelegatorsReply) ProtoMessage()    {}
 func (*GetDelegatorsReply) Descriptor() ([]byte, []int) {
-	return fileDescriptor_289e7c8aea278311, []int{7}
+	return fileDescriptor_289e7c8aea278311, []int{19}
 }
 func (m *GetDelegatorsReply) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_GetDelegatorsReply.Unmarshal(m, b)
@@ -457,10 +1144,23 @@ func (m *GetDelegatorsReply) GetDelegators() []*Delegator {
 }
 
 func init() {
+	proto.RegisterEnum("com.ankr.ValidatorStatus", ValidatorStatus_name, ValidatorStatus_value)
 	proto.RegisterType((*ChainNativeCurrency)(nil), "com.ankr.ChainNativeCurrency")
 	proto.RegisterType((*ChainExplorer)(nil), "com.ankr.ChainExplorer")
 	proto.RegisterType((*Chain)(nil), "com.ankr.Chain")
+	proto.RegisterType((*Validator)(nil), "com.ankr.Validator")
+	proto.RegisterType((*ValidatorHistory)(nil), "com.ankr.ValidatorHistory")
+	proto.RegisterType((*ValidatorDeposit)(nil), "com.ankr.ValidatorDeposit")
+	proto.RegisterType((*ValidatorSlashing)(nil), "com.ankr.ValidatorSlashing")
 	proto.RegisterType((*Delegator)(nil), "com.ankr.Delegator")
+	proto.RegisterType((*GetValidatorsRequest)(nil), "com.ankr.GetValidatorsRequest")
+	proto.RegisterType((*GetValidatorsReply)(nil), "com.ankr.GetValidatorsReply")
+	proto.RegisterType((*GetValidatorHistoryRequest)(nil), "com.ankr.GetValidatorHistoryRequest")
+	proto.RegisterType((*GetValidatorHistoryReply)(nil), "com.ankr.GetValidatorHistoryReply")
+	proto.RegisterType((*GetValidatorSlashingsRequest)(nil), "com.ankr.GetValidatorSlashingsRequest")
+	proto.RegisterType((*GetValidatorSlashingsReply)(nil), "com.ankr.GetValidatorSlashingsReply")
+	proto.RegisterType((*GetValidatorDepositsRequest)(nil), "com.ankr.GetValidatorDepositsRequest")
+	proto.RegisterType((*GetValidatorDepositsReply)(nil), "com.ankr.GetValidatorDepositsReply")
 	proto.RegisterType((*GetChainsRequest)(nil), "com.ankr.GetChainsRequest")
 	proto.RegisterType((*GetChainsReply)(nil), "com.ankr.GetChainsReply")
 	proto.RegisterType((*GetDelegatorsRequest)(nil), "com.ankr.GetDelegatorsRequest")
@@ -470,42 +1170,73 @@ func init() {
 func init() { proto.RegisterFile("staking.proto", fileDescriptor_289e7c8aea278311) }
 
 var fileDescriptor_289e7c8aea278311 = []byte{
-	// 554 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x74, 0x54, 0x4d, 0x6f, 0xd3, 0x40,
-	0x10, 0x55, 0x9a, 0x34, 0xb1, 0x27, 0x72, 0x5a, 0x6d, 0x22, 0x30, 0x51, 0x0b, 0x91, 0x2f, 0xe4,
-	0x94, 0x4a, 0x09, 0xb7, 0x9e, 0x68, 0x81, 0xa8, 0x87, 0x56, 0xb0, 0x2d, 0x17, 0x24, 0x14, 0x6d,
-	0xed, 0x4d, 0x6d, 0x6a, 0x7b, 0xcd, 0xee, 0xa6, 0x60, 0xfe, 0x0b, 0x17, 0x7e, 0x29, 0xda, 0xc9,
-	0xc6, 0xf9, 0x20, 0x5c, 0xa2, 0x79, 0x6f, 0xc6, 0xcf, 0x6f, 0xde, 0x28, 0x06, 0x4f, 0x69, 0xf6,
-	0x98, 0xe4, 0x0f, 0xa3, 0x42, 0x0a, 0x2d, 0x88, 0x13, 0x8a, 0x6c, 0xc4, 0xf2, 0x47, 0x19, 0x7c,
-	0x85, 0xee, 0x65, 0xcc, 0x92, 0xfc, 0x86, 0xe9, 0xe4, 0x89, 0x5f, 0x2e, 0xa4, 0xe4, 0x79, 0x58,
-	0x12, 0x02, 0x8d, 0x9c, 0x65, 0xdc, 0xaf, 0x0d, 0x6a, 0x43, 0x97, 0x62, 0x4d, 0x9e, 0x41, 0x53,
-	0x95, 0xd9, 0xbd, 0x48, 0xfd, 0x03, 0x64, 0x2d, 0x22, 0x7d, 0x70, 0x22, 0x1e, 0x26, 0x19, 0x4b,
-	0x95, 0x5f, 0x1f, 0xd4, 0x86, 0x1e, 0xad, 0x70, 0xf0, 0x09, 0x3c, 0x94, 0x7f, 0xff, 0xb3, 0x48,
-	0x85, 0xe4, 0x72, 0xaf, 0xf0, 0x31, 0xd4, 0x17, 0x72, 0xa5, 0x6a, 0x4a, 0x23, 0xa9, 0x34, 0xcb,
-	0x23, 0x26, 0x23, 0x94, 0x74, 0x69, 0x85, 0x83, 0xdf, 0x07, 0x70, 0x88, 0x9a, 0xe4, 0x05, 0x38,
-	0xa1, 0x29, 0x66, 0x49, 0x84, 0x7a, 0x0d, 0xda, 0x42, 0x7c, 0x15, 0x91, 0x57, 0xd0, 0x2e, 0xa4,
-	0xf8, 0xc6, 0x43, 0x3d, 0x5b, 0x4b, 0x83, 0xa5, 0x3e, 0xcb, 0xb4, 0xf2, 0x51, 0xdf, 0xf0, 0x71,
-	0x0a, 0xa0, 0x62, 0x21, 0xf5, 0x0c, 0x3b, 0x0d, 0xec, 0xb8, 0xc8, 0xdc, 0x58, 0x9b, 0xb2, 0x08,
-	0xfd, 0xc3, 0x41, 0xdd, 0xd8, 0x94, 0x45, 0x68, 0x12, 0x99, 0xb3, 0x45, 0xc8, 0xb5, 0xdf, 0x44,
-	0xd2, 0x22, 0xf2, 0x01, 0x8e, 0x72, 0xcc, 0x73, 0x16, 0xda, 0x40, 0xfd, 0xd6, 0xa0, 0x36, 0x6c,
-	0x8f, 0x4f, 0x47, 0xab, 0xe0, 0x47, 0x7b, 0x52, 0xa7, 0x9d, 0x7c, 0xfb, 0x0a, 0x13, 0x70, 0xb8,
-	0x0d, 0xce, 0x77, 0x06, 0xf5, 0x61, 0x7b, 0xfc, 0x7c, 0x47, 0x60, 0x95, 0x2b, 0xad, 0x06, 0x83,
-	0x5b, 0x70, 0xdf, 0xf1, 0x94, 0x3f, 0x30, 0x2d, 0x24, 0xf1, 0xa1, 0xc5, 0xa2, 0x48, 0x72, 0xa5,
-	0x6c, 0xe2, 0x2b, 0x68, 0xbc, 0xb3, 0x4c, 0x2c, 0x72, 0xbd, 0xba, 0xe6, 0x12, 0x91, 0x1e, 0x1c,
-	0xf2, 0x42, 0x84, 0x31, 0x26, 0xd3, 0xa0, 0x4b, 0x10, 0xdc, 0xc1, 0xf1, 0x94, 0x6b, 0x7c, 0xa5,
-	0xa2, 0xfc, 0xfb, 0x82, 0x2b, 0x6d, 0x14, 0xc4, 0x7c, 0xae, 0xb8, 0x46, 0x69, 0x8f, 0x5a, 0x64,
-	0xa2, 0x55, 0xc9, 0x2f, 0x8e, 0xba, 0x1e, 0xc5, 0xda, 0xa8, 0xe2, 0x69, 0x6c, 0xde, 0x4b, 0x10,
-	0xdc, 0x41, 0x67, 0x43, 0xb5, 0x48, 0x4b, 0xf2, 0x1a, 0x9a, 0xd8, 0x32, 0x76, 0xcd, 0xbe, 0x47,
-	0x3b, 0xfb, 0x52, 0xdb, 0x36, 0xb7, 0x8f, 0x99, 0x9a, 0x65, 0x42, 0x2e, 0x5f, 0xe4, 0xd0, 0x56,
-	0xcc, 0xd4, 0xb5, 0x90, 0x3c, 0x78, 0x03, 0xbd, 0x29, 0xd7, 0x55, 0x06, 0x95, 0xdf, 0x13, 0x70,
-	0x9f, 0x58, 0x9a, 0x44, 0x86, 0xb4, 0x69, 0xac, 0x89, 0xe0, 0x0a, 0xc8, 0xce, 0x53, 0xc6, 0xcf,
-	0x04, 0x20, 0xaa, 0x28, 0xeb, 0xa9, 0xbb, 0xf6, 0x54, 0x8d, 0xd3, 0x8d, 0xb1, 0xf1, 0x9f, 0x1a,
-	0x74, 0x6e, 0x97, 0xff, 0xb7, 0x29, 0xd3, 0xfc, 0x07, 0x2b, 0xc9, 0x5b, 0x70, 0xab, 0x4d, 0x49,
-	0x7f, 0x2d, 0xb0, 0x1b, 0x6a, 0xdf, 0xdf, 0xdb, 0x33, 0x56, 0xae, 0xc1, 0xdb, 0x32, 0x48, 0x5e,
-	0x6e, 0x8d, 0xfe, 0xb3, 0x6f, 0xff, 0xe4, 0xbf, 0xfd, 0x22, 0x2d, 0x2f, 0xce, 0xa1, 0x53, 0xb5,
-	0xf1, 0xa3, 0x70, 0xd1, 0xdd, 0xf6, 0xfc, 0xd1, 0x90, 0x5f, 0x7a, 0xa3, 0x33, 0x15, 0x33, 0xc9,
-	0xa3, 0x33, 0x5d, 0x16, 0x5c, 0x9d, 0xe3, 0xef, 0x7d, 0x13, 0x9f, 0x98, 0xfc, 0x0d, 0x00, 0x00,
-	0xff, 0xff, 0x85, 0xa9, 0x81, 0xa6, 0x57, 0x04, 0x00, 0x00,
+	// 1050 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xb4, 0x57, 0x5d, 0x73, 0xdb, 0x44,
+	0x17, 0x7e, 0x15, 0x3b, 0x89, 0x7d, 0xf2, 0x3a, 0x71, 0x37, 0x29, 0x55, 0x94, 0x34, 0x04, 0x51,
+	0x20, 0x30, 0x43, 0x3a, 0xa4, 0xdc, 0xf5, 0xca, 0xf9, 0x68, 0x6a, 0x48, 0x9d, 0xa2, 0x38, 0xb9,
+	0x60, 0x86, 0xd1, 0x6c, 0xa4, 0x8d, 0x25, 0x62, 0x6b, 0xcd, 0xee, 0x3a, 0xc5, 0xdc, 0xc1, 0x0c,
+	0xc3, 0x1d, 0xff, 0xa0, 0x3f, 0x80, 0x19, 0xee, 0xf8, 0x83, 0xcc, 0xae, 0x56, 0xb2, 0x24, 0xab,
+	0x36, 0x74, 0xca, 0x4d, 0x46, 0xe7, 0x73, 0x9f, 0xe7, 0x9c, 0xb3, 0x67, 0x63, 0x68, 0x70, 0x81,
+	0x6f, 0xc3, 0xa8, 0xb7, 0x3f, 0x64, 0x54, 0x50, 0x54, 0xf3, 0xe8, 0x60, 0x1f, 0x47, 0xb7, 0xcc,
+	0xfe, 0x0e, 0xd6, 0x8f, 0x02, 0x1c, 0x46, 0x1d, 0x2c, 0xc2, 0x3b, 0x72, 0x34, 0x62, 0x8c, 0x44,
+	0xde, 0x18, 0x21, 0xa8, 0x46, 0x78, 0x40, 0x4c, 0x63, 0xd7, 0xd8, 0xab, 0x3b, 0xea, 0x1b, 0xbd,
+	0x07, 0x4b, 0x7c, 0x3c, 0xb8, 0xa6, 0x7d, 0x73, 0x41, 0x69, 0xb5, 0x84, 0x2c, 0xa8, 0xf9, 0xc4,
+	0x0b, 0x07, 0xb8, 0xcf, 0xcd, 0xca, 0xae, 0xb1, 0xd7, 0x70, 0x52, 0xd9, 0xfe, 0x06, 0x1a, 0x2a,
+	0xfd, 0xc9, 0x8f, 0xc3, 0x3e, 0x65, 0x84, 0x95, 0x26, 0x6e, 0x42, 0x65, 0xc4, 0x92, 0xac, 0xf2,
+	0x53, 0xa6, 0xe4, 0x02, 0x47, 0x3e, 0x66, 0xbe, 0x4a, 0x59, 0x77, 0x52, 0xd9, 0x7e, 0xbd, 0x00,
+	0x8b, 0x2a, 0x27, 0xda, 0x84, 0x9a, 0x27, 0x3f, 0xdc, 0xd0, 0x57, 0xf9, 0xaa, 0xce, 0xb2, 0x92,
+	0xdb, 0x3e, 0x7a, 0x1f, 0x56, 0x86, 0x8c, 0x7e, 0x4f, 0x3c, 0xe1, 0x4e, 0x52, 0x83, 0x56, 0x5d,
+	0xb2, 0x7e, 0x8a, 0xa3, 0x92, 0xc1, 0xf1, 0x10, 0x80, 0x07, 0x94, 0x09, 0x57, 0x59, 0xaa, 0xca,
+	0x52, 0x57, 0x9a, 0x8e, 0x86, 0xc9, 0x86, 0x9e, 0xb9, 0xb8, 0x5b, 0x91, 0x30, 0xd9, 0xd0, 0x93,
+	0x15, 0xb9, 0xc1, 0x23, 0x8f, 0x08, 0x73, 0x49, 0x29, 0xb5, 0x84, 0x9e, 0xc1, 0x5a, 0xa4, 0xea,
+	0xe9, 0x7a, 0xba, 0xa0, 0xe6, 0xf2, 0xae, 0xb1, 0xb7, 0x72, 0xf0, 0x70, 0x3f, 0x29, 0xfc, 0x7e,
+	0x49, 0xd5, 0x9d, 0xd5, 0x28, 0xdf, 0x85, 0x27, 0x50, 0x23, 0xba, 0x70, 0x66, 0x6d, 0xb7, 0xb2,
+	0xb7, 0x72, 0xf0, 0xa0, 0x90, 0x20, 0xa9, 0xab, 0x93, 0x3a, 0xda, 0xbf, 0x1b, 0x50, 0xbf, 0xc2,
+	0xfd, 0xd0, 0xc7, 0x82, 0x32, 0x64, 0xc2, 0x32, 0xf6, 0x7d, 0x46, 0x38, 0xd7, 0x25, 0x4f, 0x44,
+	0xb4, 0x01, 0x8b, 0xf4, 0x55, 0x44, 0x98, 0x2e, 0x4e, 0x2c, 0xa0, 0x2f, 0x60, 0x89, 0x0b, 0x2c,
+	0x46, 0x71, 0x2b, 0x57, 0x0f, 0x36, 0x27, 0x07, 0xa6, 0x49, 0x2f, 0x94, 0x83, 0xa3, 0x1d, 0xd1,
+	0x0e, 0x80, 0x47, 0x07, 0x83, 0x90, 0xf3, 0x90, 0x46, 0xaa, 0x6c, 0x0d, 0x27, 0xa3, 0xb1, 0xff,
+	0x30, 0xa0, 0x99, 0xc6, 0x3e, 0x0f, 0xb9, 0xa0, 0x6c, 0x3c, 0x03, 0xd7, 0xe7, 0x20, 0xbb, 0x18,
+	0xf5, 0x08, 0x57, 0xc8, 0x56, 0x0e, 0xd6, 0x4b, 0x20, 0x38, 0x89, 0x0f, 0xfa, 0x14, 0x9a, 0x82,
+	0xe1, 0x88, 0x63, 0x4f, 0x84, 0x34, 0x72, 0x03, 0xcc, 0x03, 0xdd, 0xd4, 0xb5, 0x8c, 0xfe, 0x39,
+	0xe6, 0x01, 0xfa, 0x00, 0xfe, 0x7f, 0xdd, 0xa7, 0xde, 0xad, 0x1b, 0x8d, 0x06, 0xd7, 0x84, 0x29,
+	0xa8, 0x55, 0x67, 0x45, 0xe9, 0x3a, 0x4a, 0x65, 0xff, 0x99, 0xc5, 0x7a, 0x4c, 0x86, 0x94, 0x87,
+	0x02, 0x6d, 0x43, 0xfd, 0x2e, 0xd1, 0x69, 0xb4, 0x13, 0x85, 0x1c, 0x02, 0x3c, 0xa0, 0xa3, 0x48,
+	0x24, 0xd7, 0x22, 0x96, 0x64, 0x7d, 0xc9, 0x90, 0x7a, 0x31, 0x9a, 0xaa, 0x13, 0x0b, 0xa5, 0x70,
+	0xab, 0xff, 0x0c, 0xee, 0xe2, 0x34, 0xdc, 0xbf, 0x0c, 0xb8, 0x37, 0x69, 0x4b, 0x1f, 0xf3, 0x20,
+	0x8c, 0x7a, 0x73, 0xf0, 0xa6, 0xb8, 0x16, 0xb2, 0xb8, 0xb6, 0xa1, 0xce, 0x75, 0x7c, 0x72, 0x8b,
+	0x27, 0x8a, 0x77, 0x8c, 0xfa, 0x02, 0xea, 0xc7, 0xa4, 0x4f, 0x7a, 0x73, 0x06, 0xf4, 0x5f, 0x15,
+	0xd6, 0x3e, 0x84, 0x8d, 0x53, 0x22, 0xd2, 0x62, 0x70, 0x87, 0xfc, 0x30, 0x22, 0x5c, 0xc8, 0x2c,
+	0xf4, 0xe6, 0x86, 0x13, 0xa1, 0xd2, 0x37, 0x1c, 0x2d, 0xc9, 0x05, 0xc0, 0xc3, 0x9f, 0x88, 0xca,
+	0xdd, 0x70, 0xd4, 0xb7, 0xed, 0x03, 0x2a, 0xe4, 0x18, 0xf6, 0xe5, 0x2d, 0x84, 0xb4, 0x7a, 0x12,
+	0x64, 0xe5, 0x4d, 0x33, 0x99, 0x71, 0x93, 0xbb, 0x29, 0xc0, 0xdc, 0x1d, 0x50, 0x16, 0x1f, 0x51,
+	0x73, 0x96, 0x03, 0xcc, 0x5f, 0x50, 0x46, 0xec, 0x1b, 0xb0, 0xb2, 0xa7, 0xe8, 0x1b, 0xf1, 0x16,
+	0x78, 0xf3, 0x8d, 0xae, 0x14, 0x1a, 0x6d, 0xff, 0x62, 0x80, 0x59, 0x7a, 0x90, 0x24, 0xf5, 0x35,
+	0xac, 0xa7, 0x9e, 0x6e, 0xa0, 0x2c, 0x21, 0x49, 0xd8, 0x59, 0x25, 0xec, 0x92, 0x68, 0x74, 0x97,
+	0xd7, 0x84, 0x64, 0x26, 0xd9, 0x00, 0xb6, 0xb3, 0x18, 0x92, 0x19, 0xe5, 0xef, 0x9e, 0xee, 0xaf,
+	0x46, 0xbe, 0xae, 0x99, 0xa3, 0x24, 0xe1, 0xb3, 0x2c, 0xe1, 0xc9, 0xa8, 0xc7, 0x84, 0xb7, 0xca,
+	0xb6, 0x9c, 0xf6, 0xc9, 0x30, 0x4e, 0x53, 0xce, 0x62, 0xdc, 0x83, 0xad, 0x2c, 0x0c, 0xbd, 0x44,
+	0xfe, 0x03, 0xc2, 0x3f, 0x1b, 0xb0, 0x59, 0x7e, 0x92, 0xe4, 0xdb, 0x86, 0x09, 0x6e, 0xd7, 0xd7,
+	0xa6, 0x19, 0xfd, 0xd5, 0xd1, 0xce, 0xbd, 0xbb, 0x62, 0xbe, 0x59, 0x64, 0xbb, 0xd0, 0x3c, 0x25,
+	0x42, 0x3d, 0x45, 0x6f, 0xc5, 0x70, 0x03, 0x16, 0xd5, 0x93, 0xad, 0xd9, 0xc5, 0x82, 0xdd, 0x85,
+	0xd5, 0x4c, 0x56, 0xc9, 0xe6, 0x13, 0x58, 0x52, 0xa6, 0x84, 0xc1, 0x5a, 0xe1, 0x1d, 0x74, 0xb4,
+	0x79, 0x16, 0xd6, 0x2f, 0xd5, 0x86, 0x48, 0x37, 0x4f, 0x8a, 0x77, 0xe6, 0xba, 0xb4, 0xdb, 0x6a,
+	0x27, 0x64, 0xa3, 0xf4, 0x4e, 0xf0, 0x53, 0xd5, 0xf4, 0x4e, 0x48, 0xdd, 0x9d, 0x8c, 0xdb, 0x67,
+	0xbf, 0x19, 0xb0, 0x56, 0x78, 0x44, 0xd1, 0x0e, 0x58, 0x57, 0xad, 0xb3, 0xf6, 0x71, 0xab, 0x7b,
+	0xee, 0xb8, 0x17, 0xdd, 0x56, 0xf7, 0xf2, 0xc2, 0xed, 0x9c, 0x77, 0xdd, 0x67, 0xe7, 0x97, 0x9d,
+	0xe3, 0xe6, 0xff, 0xd0, 0x16, 0x3c, 0x98, 0xb2, 0xb7, 0x8e, 0xba, 0xed, 0xab, 0x93, 0xa6, 0x81,
+	0xb6, 0xc1, 0x9c, 0x32, 0xbe, 0x3c, 0xe9, 0x1c, 0xb7, 0x3b, 0xa7, 0xcd, 0x05, 0xb4, 0x09, 0xf7,
+	0xa7, 0xac, 0x5f, 0xb5, 0xda, 0x67, 0xcd, 0xca, 0xc1, 0xeb, 0x2a, 0xac, 0x5e, 0xc4, 0xff, 0x11,
+	0x9e, 0x62, 0x41, 0x5e, 0xe1, 0x31, 0x7a, 0x01, 0x8d, 0xdc, 0xee, 0x43, 0x3b, 0x13, 0x3a, 0x65,
+	0x8b, 0xd5, 0xda, 0x7e, 0xa3, 0x5d, 0x16, 0xc8, 0x85, 0xf5, 0x92, 0xdd, 0x83, 0x1e, 0x95, 0x07,
+	0xe5, 0x77, 0xa0, 0x65, 0xcf, 0xf1, 0x92, 0x07, 0x10, 0xb8, 0x5f, 0x7a, 0xdb, 0xd1, 0xc7, 0xe5,
+	0xc1, 0xc5, 0xcd, 0x63, 0x3d, 0x9a, 0xeb, 0x27, 0x8f, 0xb9, 0xce, 0x3f, 0x2b, 0xe9, 0x9d, 0xf8,
+	0xa8, 0x3c, 0xba, 0x70, 0xdb, 0xad, 0x0f, 0xe7, 0xb9, 0xc9, 0x33, 0x5a, 0x50, 0x4f, 0xc7, 0x1d,
+	0x59, 0xb9, 0x88, 0xdc, 0xcd, 0xb2, 0xcc, 0x52, 0x9b, 0x4c, 0x11, 0x77, 0x6f, 0x32, 0xa5, 0x85,
+	0xee, 0x4d, 0x0d, 0x7d, 0xa1, 0x7b, 0x85, 0xf1, 0x3e, 0x7c, 0x0a, 0xab, 0xa9, 0x59, 0xfd, 0x62,
+	0x38, 0x5c, 0xcf, 0x8f, 0xcb, 0x4b, 0xa9, 0xfc, 0x76, 0x63, 0xff, 0x31, 0x0f, 0x30, 0x23, 0xfe,
+	0x63, 0x31, 0x1e, 0x12, 0xfe, 0x54, 0xfd, 0xbd, 0x5e, 0x52, 0x11, 0x4f, 0xfe, 0x0e, 0x00, 0x00,
+	0xff, 0xff, 0x86, 0x5f, 0xd5, 0x86, 0x74, 0x0c, 0x00, 0x00,
 }
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -520,6 +1251,10 @@ const _ = grpc.SupportPackageIsVersion4
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://godoc.org/google.golang.org/grpc#ClientConn.NewStream.
 type StakingGatewayClient interface {
+	GetValidators(ctx context.Context, in *GetValidatorsRequest, opts ...grpc.CallOption) (*GetValidatorsReply, error)
+	GetValidatorHistory(ctx context.Context, in *GetValidatorHistoryRequest, opts ...grpc.CallOption) (*GetValidatorHistoryReply, error)
+	GetValidatorSlashings(ctx context.Context, in *GetValidatorSlashingsRequest, opts ...grpc.CallOption) (*GetValidatorSlashingsReply, error)
+	GetValidatorDeposits(ctx context.Context, in *GetValidatorDepositsRequest, opts ...grpc.CallOption) (*GetValidatorDepositsReply, error)
 	GetChains(ctx context.Context, in *GetChainsRequest, opts ...grpc.CallOption) (*GetChainsReply, error)
 	GetDelegators(ctx context.Context, in *GetDelegatorsRequest, opts ...grpc.CallOption) (*GetDelegatorsReply, error)
 }
@@ -530,6 +1265,42 @@ type stakingGatewayClient struct {
 
 func NewStakingGatewayClient(cc *grpc.ClientConn) StakingGatewayClient {
 	return &stakingGatewayClient{cc}
+}
+
+func (c *stakingGatewayClient) GetValidators(ctx context.Context, in *GetValidatorsRequest, opts ...grpc.CallOption) (*GetValidatorsReply, error) {
+	out := new(GetValidatorsReply)
+	err := c.cc.Invoke(ctx, "/com.ankr.StakingGateway/GetValidators", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *stakingGatewayClient) GetValidatorHistory(ctx context.Context, in *GetValidatorHistoryRequest, opts ...grpc.CallOption) (*GetValidatorHistoryReply, error) {
+	out := new(GetValidatorHistoryReply)
+	err := c.cc.Invoke(ctx, "/com.ankr.StakingGateway/GetValidatorHistory", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *stakingGatewayClient) GetValidatorSlashings(ctx context.Context, in *GetValidatorSlashingsRequest, opts ...grpc.CallOption) (*GetValidatorSlashingsReply, error) {
+	out := new(GetValidatorSlashingsReply)
+	err := c.cc.Invoke(ctx, "/com.ankr.StakingGateway/GetValidatorSlashings", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *stakingGatewayClient) GetValidatorDeposits(ctx context.Context, in *GetValidatorDepositsRequest, opts ...grpc.CallOption) (*GetValidatorDepositsReply, error) {
+	out := new(GetValidatorDepositsReply)
+	err := c.cc.Invoke(ctx, "/com.ankr.StakingGateway/GetValidatorDeposits", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
 }
 
 func (c *stakingGatewayClient) GetChains(ctx context.Context, in *GetChainsRequest, opts ...grpc.CallOption) (*GetChainsReply, error) {
@@ -552,6 +1323,10 @@ func (c *stakingGatewayClient) GetDelegators(ctx context.Context, in *GetDelegat
 
 // StakingGatewayServer is the server API for StakingGateway service.
 type StakingGatewayServer interface {
+	GetValidators(context.Context, *GetValidatorsRequest) (*GetValidatorsReply, error)
+	GetValidatorHistory(context.Context, *GetValidatorHistoryRequest) (*GetValidatorHistoryReply, error)
+	GetValidatorSlashings(context.Context, *GetValidatorSlashingsRequest) (*GetValidatorSlashingsReply, error)
+	GetValidatorDeposits(context.Context, *GetValidatorDepositsRequest) (*GetValidatorDepositsReply, error)
 	GetChains(context.Context, *GetChainsRequest) (*GetChainsReply, error)
 	GetDelegators(context.Context, *GetDelegatorsRequest) (*GetDelegatorsReply, error)
 }
@@ -560,6 +1335,18 @@ type StakingGatewayServer interface {
 type UnimplementedStakingGatewayServer struct {
 }
 
+func (*UnimplementedStakingGatewayServer) GetValidators(ctx context.Context, req *GetValidatorsRequest) (*GetValidatorsReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetValidators not implemented")
+}
+func (*UnimplementedStakingGatewayServer) GetValidatorHistory(ctx context.Context, req *GetValidatorHistoryRequest) (*GetValidatorHistoryReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetValidatorHistory not implemented")
+}
+func (*UnimplementedStakingGatewayServer) GetValidatorSlashings(ctx context.Context, req *GetValidatorSlashingsRequest) (*GetValidatorSlashingsReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetValidatorSlashings not implemented")
+}
+func (*UnimplementedStakingGatewayServer) GetValidatorDeposits(ctx context.Context, req *GetValidatorDepositsRequest) (*GetValidatorDepositsReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetValidatorDeposits not implemented")
+}
 func (*UnimplementedStakingGatewayServer) GetChains(ctx context.Context, req *GetChainsRequest) (*GetChainsReply, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetChains not implemented")
 }
@@ -569,6 +1356,78 @@ func (*UnimplementedStakingGatewayServer) GetDelegators(ctx context.Context, req
 
 func RegisterStakingGatewayServer(s *grpc.Server, srv StakingGatewayServer) {
 	s.RegisterService(&_StakingGateway_serviceDesc, srv)
+}
+
+func _StakingGateway_GetValidators_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetValidatorsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(StakingGatewayServer).GetValidators(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/com.ankr.StakingGateway/GetValidators",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(StakingGatewayServer).GetValidators(ctx, req.(*GetValidatorsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _StakingGateway_GetValidatorHistory_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetValidatorHistoryRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(StakingGatewayServer).GetValidatorHistory(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/com.ankr.StakingGateway/GetValidatorHistory",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(StakingGatewayServer).GetValidatorHistory(ctx, req.(*GetValidatorHistoryRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _StakingGateway_GetValidatorSlashings_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetValidatorSlashingsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(StakingGatewayServer).GetValidatorSlashings(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/com.ankr.StakingGateway/GetValidatorSlashings",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(StakingGatewayServer).GetValidatorSlashings(ctx, req.(*GetValidatorSlashingsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _StakingGateway_GetValidatorDeposits_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetValidatorDepositsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(StakingGatewayServer).GetValidatorDeposits(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/com.ankr.StakingGateway/GetValidatorDeposits",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(StakingGatewayServer).GetValidatorDeposits(ctx, req.(*GetValidatorDepositsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
 }
 
 func _StakingGateway_GetChains_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
@@ -611,6 +1470,22 @@ var _StakingGateway_serviceDesc = grpc.ServiceDesc{
 	ServiceName: "com.ankr.StakingGateway",
 	HandlerType: (*StakingGatewayServer)(nil),
 	Methods: []grpc.MethodDesc{
+		{
+			MethodName: "GetValidators",
+			Handler:    _StakingGateway_GetValidators_Handler,
+		},
+		{
+			MethodName: "GetValidatorHistory",
+			Handler:    _StakingGateway_GetValidatorHistory_Handler,
+		},
+		{
+			MethodName: "GetValidatorSlashings",
+			Handler:    _StakingGateway_GetValidatorSlashings_Handler,
+		},
+		{
+			MethodName: "GetValidatorDeposits",
+			Handler:    _StakingGateway_GetValidatorDeposits_Handler,
+		},
 		{
 			MethodName: "GetChains",
 			Handler:    _StakingGateway_GetChains_Handler,
