@@ -29,6 +29,8 @@ http:
       get: /v1alpha/staking/validators/{validator}/slashing
     - selector: com.ankr.StakingGateway.GetValidatorDeposits
       get: /v1alpha/staking/validators/{validator}/deposits
+    - selector: com.ankr.StakingGateway.GetValidatorEvents
+      get: /v1alpha/staking/validators/{validator}/events
     - selector: com.ankr.StakingGateway.GetDelegators
       get: /v1alpha/staking/delegators
       additional_bindings:

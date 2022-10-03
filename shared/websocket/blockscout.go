@@ -87,7 +87,7 @@ func (s *Server) blockscoutWorker(config *Config) error {
 				log.WithError(err).Errorf("failed to parse new block")
 				continue
 			}
-			if err := s.broadcastToAll("newBlock", block); err != nil {
+			if err := s.broadcastToAll("new_block", block); err != nil {
 				log.WithError(err).Errorf("failed to broadcast new block")
 				continue
 			}
@@ -97,7 +97,7 @@ func (s *Server) blockscoutWorker(config *Config) error {
 				log.WithError(err).Errorf("failed to parse new transaction")
 				continue
 			}
-			if err := s.broadcastToAll("newTransaction", transaction); err != nil {
+			if err := s.broadcastToAll("new_transaction", transaction); err != nil {
 				log.WithError(err).Errorf("failed to broadcast new transaction")
 				continue
 			}

@@ -9,18 +9,15 @@ import (
 	"github.com/Ankr-network/ankr-protocol/shared/staking/abigen"
 	"github.com/Ankr-network/ankr-protocol/shared/types"
 	"github.com/ethereum/go-ethereum"
-	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	types2 "github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/pkg/errors"
 	"github.com/samber/lo"
-	"github.com/shopspring/decimal"
 	log "github.com/sirupsen/logrus"
 	"io/ioutil"
 	"math/big"
 	"net/http"
-	"sort"
 	"strings"
 	"time"
 )
@@ -55,45 +52,35 @@ func (s *Service) Start(cp shared.IConfigProvider) (err error) {
 			log.Fatalf("failed to start background worker: %+v", err)
 		}
 	}()
-	go s.refreshRecentDelegators()
 	return nil
 }
 
-func (s *Service) refreshRecentDelegators() {
-	updateDelegatorsTick := time.Tick(15 * time.Minute)
+func (s *Service) backgroundWorker() (err error) {
+	// do recovery
+	hasMore := true
+	for hasMore {
+		hasMore, err = s.processEventLogs(context.TODO())
+		if err != nil {
+			return err
+		}
+	}
+	// run worker
 	updateChainsTick := time.Tick(15 * time.Minute)
+	processEventLogsTick := time.Tick(10 * time.Second)
 	for {
 		var err error
 		select {
-		case <-updateDelegatorsTick:
-			//newDelegators := make(map[common.Address][]*types.Delegator)
-			//for validator := range s.delegators {
-			//	delegators, err := s.getDelegators(context.Background(), []common.Address{validator})
-			//	if err != nil {
-			//		log.Errorf("failed to refresh recent delegators: %+v", err)
-			//	}
-			//	newDelegators[validator] = delegators
-			//}
-			//s.delegators = newDelegators
 		case <-updateChainsTick:
-			s.chains, err = s.GetChains(context.Background())
+			s.chains, err = s.GetChains(context.TODO())
 			if err != nil {
-				log.Errorf("failed to refresh chains: %+v", err)
+				return err
+			}
+		case <-processEventLogsTick:
+			_, err = s.processEventLogs(context.TODO())
+			if err != nil {
+				return err
 			}
 		}
-	}
-}
-
-func (s *Service) backgroundWorker() error {
-	ctx := context.TODO()
-	for {
-		hasMore, err := s.processEventLogs(ctx)
-		if err != nil {
-			return err
-		} else if hasMore {
-			continue
-		}
-		time.Sleep(30 * time.Second)
 	}
 }
 
@@ -119,25 +106,25 @@ func (s *Service) processEventLogs(ctx context.Context) (hasMore bool, err error
 			s.config.StakingContract,
 		},
 	})
-	s.state.NewPipeline()
+	pip := s.state.NewPipeline()
 	defer func() {
-		if err != nil {
-			s.state.CancelPipline()
+		if err == nil {
+			err = pip.Commit(ctx, toBlock)
 		} else {
-			err = s.state.CommitPipeline(ctx, toBlock)
+			pip.Cancel()
 		}
 	}()
 	for _, l := range logs {
-		if err = s.processEventLog(ctx, l); err != nil {
+		if err = s.processEventLog(ctx, pip, l); err != nil {
 			return false, err
 		}
 	}
 	return
 }
 
-func (s *Service) processEventLog(ctx context.Context, l types2.Log) error {
+func (s *Service) processEventLog(ctx context.Context, pip *database.Pipeline, l types2.Log) error {
 	if event, _ := s.staking.ParseValidatorAdded(l); event != nil {
-		val, _, err := s.state.AddValidator(ctx, event)
+		val, _, err := pip.AddValidator(ctx, event)
 		if err != nil {
 			return err
 		}
@@ -145,7 +132,7 @@ func (s *Service) processEventLog(ctx context.Context, l types2.Log) error {
 		return nil
 	}
 	if event, _ := s.staking.ParseValidatorModified(l); event != nil {
-		val, _, err := s.state.ModifyValidator(ctx, event)
+		val, _, err := pip.ModifyValidator(ctx, event)
 		if err != nil {
 			return err
 		}
@@ -153,7 +140,7 @@ func (s *Service) processEventLog(ctx context.Context, l types2.Log) error {
 		return nil
 	}
 	if event, _ := s.staking.ParseValidatorRemoved(l); event != nil {
-		val, _, err := s.state.RemoveValidator(ctx, event)
+		val, _, err := pip.RemoveValidator(ctx, event)
 		if err != nil {
 			return err
 		}
@@ -161,7 +148,7 @@ func (s *Service) processEventLog(ctx context.Context, l types2.Log) error {
 		return nil
 	}
 	if event, _ := s.staking.ParseValidatorSlashed(l); event != nil {
-		val, err := s.state.SlashValidator(ctx, event)
+		val, err := pip.SlashValidator(ctx, event)
 		if err != nil {
 			return err
 		}
@@ -169,7 +156,7 @@ func (s *Service) processEventLog(ctx context.Context, l types2.Log) error {
 		return nil
 	}
 	if event, _ := s.staking.ParseValidatorJailed(l); event != nil {
-		val, _, err := s.state.JailValidator(ctx, event)
+		val, _, err := pip.JailValidator(ctx, event)
 		if err != nil {
 			return err
 		}
@@ -177,7 +164,7 @@ func (s *Service) processEventLog(ctx context.Context, l types2.Log) error {
 		return nil
 	}
 	if event, _ := s.staking.ParseValidatorReleased(l); event != nil {
-		val, _, err := s.state.ReleaseValidator(ctx, event)
+		val, _, err := pip.ReleaseValidator(ctx, event)
 		if err != nil {
 			return err
 		}
@@ -185,11 +172,43 @@ func (s *Service) processEventLog(ctx context.Context, l types2.Log) error {
 		return nil
 	}
 	if event, _ := s.staking.ParseValidatorDeposited(l); event != nil {
-		val, err := s.state.DepositValidator(ctx, event)
+		val, err := pip.DepositValidator(ctx, event)
 		if err != nil {
 			return err
 		}
 		log.WithFields(logDepositFields(val)).Infof("validator deposited")
+		return nil
+	}
+	if event, _ := s.staking.ParseDelegated(l); event != nil {
+		ev, err := pip.AddDelegated(ctx, event)
+		if err != nil {
+			return err
+		}
+		log.WithFields(logValidatorEventFields(ev)).Infof("validator delegated")
+		return nil
+	}
+	if event, _ := s.staking.ParseUndelegated(l); event != nil {
+		ev, err := pip.AddUndelegated(ctx, event)
+		if err != nil {
+			return err
+		}
+		log.WithFields(logValidatorEventFields(ev)).Infof("validator undelegated")
+		return nil
+	}
+	if event, _ := s.staking.ParseClaimed(l); event != nil {
+		ev, err := pip.AddClaimed(ctx, event)
+		if err != nil {
+			return err
+		}
+		log.WithFields(logValidatorEventFields(ev)).Infof("validator claimed")
+		return nil
+	}
+	if event, _ := s.staking.ParseRedelegated(l); event != nil {
+		ev, err := pip.AddRedelegated(ctx, event)
+		if err != nil {
+			return err
+		}
+		log.WithFields(logValidatorEventFields(ev)).Infof("validator redelegated")
 		return nil
 	}
 	log.WithField("topic", l.Topics[0]).Warnf("not supported event type")
@@ -286,39 +305,6 @@ func (s *Service) GetChain(ctx context.Context, chain string) (*types.Chain, err
 	return nil, fmt.Errorf("unknown chain (%s)", chain)
 }
 
-func (s *Service) getDelegators(ctx context.Context, validators []common.Address) (result SortedDelegators, err error) {
-	it, err := s.staking.FilterDelegated(&bind.FilterOpts{Context: ctx, Start: uint64(0)}, validators, nil)
-	if err != nil {
-		return nil, err
-	}
-	type delegator struct {
-		amount *big.Int
-		epoch  uint64
-	}
-	delegators := make(map[common.Address]delegator)
-	for it.Next() {
-		del := delegators[it.Event.Staker]
-		if del.amount == nil {
-			del.amount = big.NewInt(0)
-		}
-		del.amount.Add(del.amount, it.Event.Amount)
-		del.epoch = it.Event.Epoch
-		delegators[it.Event.Staker] = del
-	}
-	if it.Error() != nil {
-		return nil, it.Error()
-	}
-	result = lo.MapToSlice(delegators, func(k common.Address, v delegator) *types.Delegator {
-		return &types.Delegator{
-			Address: k.Hex(),
-			Amount:  decimal.NewFromBigInt(v.amount, -18).String(),
-			Epoch:   v.epoch,
-		}
-	})
-	sort.Sort(result)
-	return result, nil
-}
-
 func (s *Service) GetValidators(ctx context.Context) (result []*types.Validator, err error) {
 	return s.state.GetValidators(ctx)
 }
@@ -335,10 +321,14 @@ func (s *Service) GetValidatorDeposits(ctx context.Context, validator common.Add
 	return s.state.GetValidatorDeposits(ctx, validator, int64(offset), int64(size))
 }
 
-func (s *Service) GetDelegatorsByValidator(ctx context.Context, validator common.Address) (result []*types.Delegator, err error) {
-	return s.getDelegators(ctx, []common.Address{validator})
+func (s *Service) GetValidatorEvents(ctx context.Context, validator common.Address, offset, size uint32) (result []*types.ValidatorEvent, err error) {
+	return s.state.GetValidatorEvents(ctx, validator, int64(offset), int64(size))
 }
 
-func (s *Service) GetDelegators(ctx context.Context) (result []*types.Delegator, err error) {
-	return s.getDelegators(ctx, []common.Address{})
+func (s *Service) GetDelegatorsByValidator(ctx context.Context, validator common.Address, offset, size uint32) (result []*types.Delegator, err error) {
+	return s.state.GetDelegators(ctx, int64(offset), int64(size), validator)
+}
+
+func (s *Service) GetDelegators(ctx context.Context, offset, size uint32) (result []*types.Delegator, err error) {
+	return s.state.GetDelegators(ctx, int64(offset), int64(size), common.Address{})
 }

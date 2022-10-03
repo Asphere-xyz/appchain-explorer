@@ -67,9 +67,27 @@ message ValidatorSlashing {
   uint64 block_number = 5;
 }
 
+message ValidatorEvent {
+  message EventFields {
+    string validator = 1;
+    string staker = 2;
+    string amount = 3;
+    string dust = 4;
+    uint64 epoch = 5;
+  }
+  oneof event {
+    EventFields delegated = 100;
+    EventFields undelegated = 101;
+    EventFields claimed = 102;
+    EventFields redelegated = 103;
+  }
+  string transaction_hash = 1;
+  uint64 block_number = 2;
+}
+
 message Delegator {
-  string address = 1;
-  string amount = 2;
+  string staker = 1;
+  string total_delegated = 2;
   uint64 epoch = 3;
 }
 
@@ -88,6 +106,7 @@ service StakingGateway {
   rpc GetValidatorHistory(GetValidatorHistoryRequest) returns (GetValidatorHistoryReply);
   rpc GetValidatorSlashings(GetValidatorSlashingsRequest) returns (GetValidatorSlashingsReply);
   rpc GetValidatorDeposits(GetValidatorDepositsRequest) returns (GetValidatorDepositsReply);
+  rpc GetValidatorEvents(GetValidatorEventsRequest) returns (GetValidatorEventsReply);
   rpc GetChains(GetChainsRequest) returns (GetChainsReply);
   rpc GetDelegators(GetDelegatorsRequest) returns (GetDelegatorsReply);
 }
@@ -131,6 +150,16 @@ message GetValidatorDepositsReply {
   bool has_more = 2;
 }
 
+message GetValidatorEventsRequest {
+  uint32 offset = 1;
+  uint32 size = 2;
+  string validator = 3;
+}
+message GetValidatorEventsReply {
+  repeated ValidatorEvent validator_events = 1;
+  bool has_more = 2;
+}
+
 message GetChainsRequest {
   uint32 offset = 1;
   uint32 size = 2;
@@ -142,8 +171,11 @@ message GetChainsReply {
 }
 
 message GetDelegatorsRequest {
-  string validator = 1;
+  uint32 offset = 1;
+  uint32 size = 2;
+  string validator = 3;
 }
 message GetDelegatorsReply {
   repeated Delegator delegators = 1;
+  bool has_more = 2;
 }

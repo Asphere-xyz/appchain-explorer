@@ -50,18 +50,34 @@ func (s *Server) GetValidatorDeposits(ctx context.Context, req *types.GetValidat
 	return &types.GetValidatorDepositsReply{ValidatorDeposits: result[:newSize], HasMore: hasMore}, nil
 }
 
+func (s *Server) GetValidatorEvents(ctx context.Context, req *types.GetValidatorEventsRequest) (*types.GetValidatorEventsReply, error) {
+	if req.Size_ == 0 || req.Size_ > 1000 {
+		req.Size_ = 1000
+	}
+	result, err := s.stakingService.GetValidatorEvents(ctx, common.HexToAddress(req.Validator), req.Offset, req.Size_)
+	if err != nil {
+		return nil, err
+	}
+	newSize, hasMore := checkHasMore(req.Size_, len(result))
+	return &types.GetValidatorEventsReply{ValidatorEvents: result[:newSize], HasMore: hasMore}, nil
+}
+
 func (s *Server) GetDelegators(ctx context.Context, req *types.GetDelegatorsRequest) (*types.GetDelegatorsReply, error) {
+	if req.Size_ == 0 || req.Size_ > 1000 {
+		req.Size_ = 1000
+	}
 	var result []*types.Delegator
 	var err error
 	if req.Validator != "" {
-		result, err = s.stakingService.GetDelegatorsByValidator(ctx, common.HexToAddress(req.Validator))
+		result, err = s.stakingService.GetDelegatorsByValidator(ctx, common.HexToAddress(req.Validator), req.Offset, req.Size_)
 	} else {
-		result, err = s.stakingService.GetDelegators(ctx)
+		result, err = s.stakingService.GetDelegators(ctx, req.Offset, req.Size_)
 	}
 	if err != nil {
 		return nil, err
 	}
-	return &types.GetDelegatorsReply{Delegators: result}, nil
+	newSize, hasMore := checkHasMore(req.Size_, len(result))
+	return &types.GetDelegatorsReply{Delegators: result[:newSize], HasMore: hasMore}, nil
 }
 
 func (s *Server) GetChains(ctx context.Context, req *types.GetChainsRequest) (*types.GetChainsReply, error) {
