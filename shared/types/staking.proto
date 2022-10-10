@@ -102,7 +102,7 @@ message StakingStats {
   string transfer_volume_24h = 8;
   uint32 active_users_7d = 9;
   uint64 known_block = 10;
-  uint64 processed_block = 11;
+  uint64 affected_block = 11;
 }
 
 /**

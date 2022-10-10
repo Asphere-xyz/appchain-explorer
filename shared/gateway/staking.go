@@ -126,7 +126,7 @@ func (s *Server) GetStats(ctx context.Context, req *types.GetStatsRequest) (*typ
 	if stats.MarketCap, err = s.stakingService.GetMarketCap(ctx); err != nil {
 		return nil, err
 	}
-	if stats.KnownBlock, stats.ProcessedBlock, err = s.stakingService.GetLatestBlock(ctx); err != nil {
+	if stats.KnownBlock, stats.AffectedBlock, err = s.stakingService.GetLatestBlock(ctx); err != nil {
 		return nil, err
 	}
 	return &types.GetStatsReply{
