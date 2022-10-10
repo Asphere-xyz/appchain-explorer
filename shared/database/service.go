@@ -8,6 +8,7 @@ import (
 	"github.com/Ankr-network/ankr-protocol/shared"
 	"github.com/Ankr-network/ankr-protocol/shared/entity"
 	"github.com/Ankr-network/ankr-protocol/shared/types"
+	"github.com/jackc/pgx/v4"
 	_ "github.com/jackc/pgx/v4/stdlib"
 	"strings"
 	"time"
@@ -221,4 +222,26 @@ func (s *Service) GetAddress(ctx context.Context, hash string) (*types.Address, 
 	result.BlocksValidated = uint32(len(validatedBlocks))
 	result.TokenTransfers = tokenTransfersCount
 	return result, nil
+}
+
+func (s *Service) EstimateTransactionCount(ctx context.Context) (uint64, error) {
+	row := s.db.QueryRowContext(ctx, "SELECT reltuples::BIGINT AS estimate FROM pg_class WHERE relname='transactions'")
+	if row.Err() == pgx.ErrNoRows {
+		return 0, nil
+	} else if row.Err() != nil {
+		return 0, row.Err()
+	}
+	var res int64
+	if err := row.Scan(&res); err != nil {
+		return 0, err
+	}
+	return uint64(res), nil
+}
+
+func (s *Service) EstimateTransfersCount(ctx context.Context) (uint64, error) {
+	return s.EstimateTransactionCount(ctx)
+}
+
+func (s *Service) EstimateTokenHolders(ctx context.Context) (uint64, error) {
+	return 0, nil
 }

@@ -91,6 +91,20 @@ message Delegator {
   uint64 epoch = 3;
 }
 
+message StakingStats {
+  uint64 total_validators = 1;
+  uint64 total_txs = 2;
+  uint64 total_transfers = 3;
+  uint64 total_holders = 4;
+  string total_insurance = 5;
+  string total_staked = 6;
+  string market_cap = 7;
+  string transfer_volume_24h = 8;
+  uint32 active_users_7d = 9;
+  uint64 known_block = 10;
+  uint64 processed_block = 11;
+}
+
 /**
  *        ____  ____   ____
  *   __ _|  _ \|  _ \ / ___|
@@ -109,6 +123,7 @@ service StakingGateway {
   rpc GetValidatorEvents(GetValidatorEventsRequest) returns (GetValidatorEventsReply);
   rpc GetChains(GetChainsRequest) returns (GetChainsReply);
   rpc GetDelegators(GetDelegatorsRequest) returns (GetDelegatorsReply);
+  rpc GetStats(GetStatsRequest) returns (GetStatsReply);
 }
 
 message GetValidatorsRequest {
@@ -178,4 +193,10 @@ message GetDelegatorsRequest {
 message GetDelegatorsReply {
   repeated Delegator delegators = 1;
   bool has_more = 2;
+}
+
+message GetStatsRequest {
+}
+message GetStatsReply {
+    StakingStats stats = 1;
 }

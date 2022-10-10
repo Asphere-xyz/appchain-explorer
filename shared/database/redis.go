@@ -65,6 +65,11 @@ func (s *StateDb) GetValidators(ctx context.Context) (result []*types.Validator,
 	return
 }
 
+func (s *StateDb) GetTotalValidators(ctx context.Context) (uint64, error) {
+	res, err := s.con.HLen(ctx, redisValidatorKey).Result()
+	return uint64(res), err
+}
+
 func (s *StateDb) GetDelegators(ctx context.Context, offset, size int64, validator common.Address) (result []*types.Delegator, err error) {
 	validatorString := ""
 	if validator != (common.Address{}) {

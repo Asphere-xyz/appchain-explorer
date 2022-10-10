@@ -22,14 +22,25 @@ import (
 
 type Server struct {
 	databaseService *database.Service
+	stateDbService  *database.StateDb
 	websocketServer *websocket.Server
 	stakingService  *staking.Service
 	// state
 	grpcServer *grpc.Server
 }
 
-func NewServer(databaseService *database.Service, websocketServer *websocket.Server, stakingService *staking.Service) *Server {
-	return &Server{databaseService: databaseService, websocketServer: websocketServer, stakingService: stakingService}
+func NewServer(
+	databaseService *database.Service,
+	stateDbService *database.StateDb,
+	websocketServer *websocket.Server,
+	stakingService *staking.Service,
+) *Server {
+	return &Server{
+		databaseService: databaseService,
+		stateDbService:  stateDbService,
+		websocketServer: websocketServer,
+		stakingService:  stakingService,
+	}
 }
 
 func (s *Server) Start(cp shared.IConfigProvider) error {

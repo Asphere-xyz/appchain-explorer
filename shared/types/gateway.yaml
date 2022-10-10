@@ -37,3 +37,5 @@ http:
         - get: /v1alpha/staking/delegators/{validator}
     - selector: com.ankr.StakingGateway.GetChains
       get: /v1alpha/staking/chains
+    - selector: com.ankr.StakingGateway.GetStats
+      get: /v1alpha/staking/stats

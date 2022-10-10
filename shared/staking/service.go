@@ -5,10 +5,12 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/Ankr-network/ankr-protocol/shared"
+	common2 "github.com/Ankr-network/ankr-protocol/shared/common"
 	"github.com/Ankr-network/ankr-protocol/shared/database"
 	"github.com/Ankr-network/ankr-protocol/shared/staking/abigen"
 	"github.com/Ankr-network/ankr-protocol/shared/types"
 	"github.com/ethereum/go-ethereum"
+	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	types2 "github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/ethclient"
@@ -303,6 +305,35 @@ func (s *Service) GetChain(ctx context.Context, chain string) (*types.Chain, err
 		}
 	}
 	return nil, fmt.Errorf("unknown chain (%s)", chain)
+}
+
+func (s *Service) GetTotalStaked(ctx context.Context) (string, error) {
+	res := big.NewInt(0)
+	vals, err := s.staking.GetValidators(&bind.CallOpts{Context: ctx})
+	if err != nil {
+		return "", err
+	}
+	for _, val := range vals {
+		status, err := s.staking.GetValidatorStatus(&bind.CallOpts{Context: ctx}, val)
+		if err != nil {
+			return "", err
+		}
+		res.Add(res, status.TotalDelegated)
+	}
+	return common2.ToEther(res), nil
+}
+
+func (s *Service) GetMarketCap(ctx context.Context) (string, error) {
+	return "0", nil
+}
+
+func (s *Service) GetLatestBlock(ctx context.Context) (uint64, uint64, error) {
+	latestKnownBlockNumber, err := s.eth.BlockNumber(ctx)
+	if err != nil {
+		return 0, 0, err
+	}
+	latestAffectedBlockNumber := s.state.GetLastAffectedBlock(ctx)
+	return latestKnownBlockNumber, latestAffectedBlockNumber, nil
 }
 
 func (s *Service) GetValidators(ctx context.Context) (result []*types.Validator, err error) {

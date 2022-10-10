@@ -98,3 +98,38 @@ func (s *Server) GetChains(ctx context.Context, req *types.GetChainsRequest) (*t
 	newSize, hasMore := checkHasMore(req.Size_, len(result))
 	return &types.GetChainsReply{Chains: result[:newSize], HasMore: hasMore}, nil
 }
+
+func (s *Server) GetStats(ctx context.Context, req *types.GetStatsRequest) (*types.GetStatsReply, error) {
+	var err error
+	stats := &types.StakingStats{
+		TotalHolders:   0,
+		TotalInsurance: "0",
+
+		TransferVolume_24H: "0",
+		ActiveUsers_7D:     0,
+	}
+	if stats.TotalValidators, err = s.stateDbService.GetTotalValidators(ctx); err != nil {
+		return nil, err
+	}
+	if stats.TotalTxs, err = s.databaseService.EstimateTransactionCount(ctx); err != nil {
+		return nil, err
+	}
+	if stats.TotalTransfers, err = s.databaseService.EstimateTransfersCount(ctx); err != nil {
+		return nil, err
+	}
+	if stats.TotalStaked, err = s.stakingService.GetTotalStaked(ctx); err != nil {
+		return nil, err
+	}
+	if stats.MarketCap, err = s.stakingService.GetMarketCap(ctx); err != nil {
+		return nil, err
+	}
+	if stats.MarketCap, err = s.stakingService.GetMarketCap(ctx); err != nil {
+		return nil, err
+	}
+	if stats.KnownBlock, stats.ProcessedBlock, err = s.stakingService.GetLatestBlock(ctx); err != nil {
+		return nil, err
+	}
+	return &types.GetStatsReply{
+		Stats: stats,
+	}, nil
+}
