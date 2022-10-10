@@ -57,5 +57,6 @@ metrics:
 #  timeoutSeconds: 2
 
 configMap:
-  TEST_ENV: test
+  DATABASE_REDIS_URL: "redis-master.stkr-system-services-{env}:6379"
+  DATABASE_REDIS_PASSWORD: "123456"
 
