@@ -142,6 +142,9 @@ func (s *Server) GetTotalTxsGraph(ctx context.Context, _ *types.GetTotalTxsGraph
 		return nil, err
 	}
 	afterBlock := int64(latestKnownBlock) - 7*24*time.Hour.Milliseconds()/int64(chainConfig.AverageBlockTime)
+	if afterBlock < 0 {
+		afterBlock = int64(0)
+	}
 	res, err := s.databaseService.GetTransactionCountGraph(ctx, uint64(afterBlock), uint64(chainConfig.EpochBlockInterval))
 	if err != nil {
 		return nil, err
