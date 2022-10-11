@@ -27,11 +27,14 @@ import (
 type Service struct {
 	state *database.StateDb
 	// start
-	config  *Config
-	eth     *ethclient.Client
-	staking *abigen.Staking
+	config *Config
+	eth    *ethclient.Client
+	// abi
+	staking     *abigen.Staking
+	chainConfig *abigen.ChainConfig
 	// state
-	chains []*types.Chain
+	cachedChainConfig *types.ChainConfig
+	cachedChains      []*types.Chain
 }
 
 func NewService(state *database.StateDb) *Service {
@@ -49,6 +52,12 @@ func (s *Service) Start(cp shared.IConfigProvider) (err error) {
 		return errors.Wrapf(err, "failed to connect to Web3 node (%s)", config.Eth1Url)
 	}
 	s.staking, _ = abigen.NewStaking(config.StakingContract, s.eth)
+	s.chainConfig, _ = abigen.NewChainConfig(config.ChainConfigContract, s.eth)
+	newChainConfig, err := s.refreshChainConfig()
+	if err != nil {
+		return err
+	}
+	s.cachedChainConfig = newChainConfig
 	go func() {
 		if err := s.backgroundWorker(); err != nil {
 			log.Fatalf("failed to start background worker: %+v", err)
@@ -67,13 +76,21 @@ func (s *Service) backgroundWorker() (err error) {
 		}
 	}
 	// run worker
+	refreshChainConfig := time.Tick(10 * time.Minute)
 	updateChainsTick := time.Tick(15 * time.Minute)
 	processEventLogsTick := time.Tick(10 * time.Second)
 	for {
 		var err error
 		select {
+		case <-refreshChainConfig:
+			var newChainConfig *types.ChainConfig
+			newChainConfig, err = s.refreshChainConfig()
+			if err != nil {
+				return err
+			}
+			s.cachedChainConfig = newChainConfig
 		case <-updateChainsTick:
-			s.chains, err = s.GetChains(context.TODO())
+			s.cachedChains, err = s.GetChains(context.TODO())
 			if err != nil {
 				return err
 			}
@@ -84,6 +101,49 @@ func (s *Service) backgroundWorker() (err error) {
 			}
 		}
 	}
+}
+
+func (s *Service) refreshChainConfig() (chainConfig *types.ChainConfig, err error) {
+	chainConfig = &types.ChainConfig{
+		AverageBlockTime: s.config.BlockTime,
+	}
+	opts := &bind.CallOpts{}
+	chainConfig.ActiveValidatorsLength, err = s.chainConfig.GetActiveValidatorsLength(opts)
+	if err != nil {
+		return nil, err
+	}
+	chainConfig.EpochBlockInterval, err = s.chainConfig.GetEpochBlockInterval(opts)
+	if err != nil {
+		return nil, err
+	}
+	chainConfig.MisdemeanorThreshold, err = s.chainConfig.GetMisdemeanorThreshold(opts)
+	if err != nil {
+		return nil, err
+	}
+	chainConfig.FelonyThreshold, err = s.chainConfig.GetFelonyThreshold(opts)
+	if err != nil {
+		return nil, err
+	}
+	chainConfig.ValidatorJailEpochLength, err = s.chainConfig.GetValidatorJailEpochLength(opts)
+	if err != nil {
+		return nil, err
+	}
+	chainConfig.UndelegatePeriod, err = s.chainConfig.GetUndelegatePeriod(opts)
+	if err != nil {
+		return nil, err
+	}
+	var bigValue *big.Int
+	bigValue, err = s.chainConfig.GetMinValidatorStakeAmount(opts)
+	if err != nil {
+		return nil, err
+	}
+	chainConfig.MinValidatorStakeAmount = common2.ToEther(bigValue)
+	bigValue, err = s.chainConfig.GetMinStakingAmount(opts)
+	if err != nil {
+		return nil, err
+	}
+	chainConfig.MinStakingAmount = common2.ToEther(bigValue)
+	return
 }
 
 func (s *Service) processEventLogs(ctx context.Context) (hasMore bool, err error) {
@@ -282,16 +342,20 @@ func (s *Service) getChains(ctx context.Context) (result []*types.Chain, err err
 		}
 	})
 	return lo.Filter(chains, func(t *types.Chain, i int) bool {
-		return !s.config.HiddenNetworks[t.ChainId]
+		if len(s.config.VisibleNetworks) > 0 {
+			return s.config.VisibleNetworks[t.ChainId]
+		} else {
+			return !s.config.HiddenNetworks[t.ChainId]
+		}
 	}), nil
 }
 
 func (s *Service) GetChains(ctx context.Context) (result []*types.Chain, err error) {
-	if s.chains != nil {
-		return s.chains, nil
+	if s.cachedChains != nil {
+		return s.cachedChains, nil
 	}
-	s.chains, err = s.getChains(ctx)
-	return s.chains, err
+	s.cachedChains, err = s.getChains(ctx)
+	return s.cachedChains, err
 }
 
 func (s *Service) GetChain(ctx context.Context, chain string) (*types.Chain, error) {
@@ -334,6 +398,10 @@ func (s *Service) GetLatestBlock(ctx context.Context) (uint64, uint64, error) {
 	}
 	latestAffectedBlockNumber := s.state.GetLastAffectedBlock(ctx)
 	return latestKnownBlockNumber, latestAffectedBlockNumber, nil
+}
+
+func (s *Service) GetChainConfig() *types.ChainConfig {
+	return s.cachedChainConfig
 }
 
 func (s *Service) GetValidators(ctx context.Context) (result []*types.Validator, err error) {

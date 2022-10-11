@@ -16,10 +16,10 @@ http:
         - get: /v1alpha/block/hash/{hash}
     - selector: com.ankr.BlockscoutGateway.GetTransactionByHash
       get: /v1alpha/tx/{hash}
-      # deprecated (don't use such pattern)
     - selector: com.ankr.BlockscoutGateway.GetTokenTransfersByAddress
       get: /v1alpha/address/transfers/{address}
-    - selector: com.ankr.BlockscoutGateway.GetTokenTransfersByAddress
+      additional_bindings:
+        - get: /v1alpha/transfers/{address}
       # StakingGateway
     - selector: com.ankr.StakingGateway.GetValidators
       get: /v1alpha/staking/validators
@@ -39,3 +39,5 @@ http:
       get: /v1alpha/staking/chains
     - selector: com.ankr.StakingGateway.GetStats
       get: /v1alpha/staking/stats
+    - selector: com.ankr.StakingGateway.GetTotalTxsGraph
+      get: /v1alpha/staking/graph/txs

@@ -37,25 +37,6 @@ metrics:
   enabled: false
   port: 7575
 
-#livenessProbe:
-#  httpGet:
-#    port: 6001
-#    path: "/actuator"
-#  failureThreshold: 1
-#  initialDelaySeconds: 90
-#  periodSeconds: 15
-#  successThreshold: 1
-#  timeoutSeconds: 2
-#readinessProbe:
-#  httpGet:
-#    port: 6001
-#    path: "/actuator"
-#  failureThreshold: 1
-#  initialDelaySeconds: 15
-#  periodSeconds: 15
-#  successThreshold: 1
-#  timeoutSeconds: 2
-
 configMap:
   DATABASE_REDIS_URL: "redis-master.stkr-system-services-{env}:6379"
   DATABASE_REDIS_PASSWORD: "123456"

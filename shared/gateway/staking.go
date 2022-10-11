@@ -4,6 +4,7 @@ import (
 	"context"
 	"github.com/Ankr-network/ankr-protocol/shared/types"
 	"github.com/ethereum/go-ethereum/common"
+	"time"
 )
 
 func (s *Server) GetValidators(ctx context.Context, req *types.GetValidatorsRequest) (*types.GetValidatorsReply, error) {
@@ -132,4 +133,18 @@ func (s *Server) GetStats(ctx context.Context, req *types.GetStatsRequest) (*typ
 	return &types.GetStatsReply{
 		Stats: stats,
 	}, nil
+}
+
+func (s *Server) GetTotalTxsGraph(ctx context.Context, _ *types.GetTotalTxsGraphRequest) (*types.GetTotalTxsGraphReply, error) {
+	chainConfig := s.stakingService.GetChainConfig()
+	latestKnownBlock, _, err := s.stakingService.GetLatestBlock(ctx)
+	if err != nil {
+		return nil, err
+	}
+	afterBlock := int64(latestKnownBlock) - 7*24*time.Hour.Milliseconds()/int64(chainConfig.AverageBlockTime)
+	res, err := s.databaseService.GetTransactionCountGraph(ctx, uint64(afterBlock), uint64(chainConfig.EpochBlockInterval))
+	if err != nil {
+		return nil, err
+	}
+	return &types.GetTotalTxsGraphReply{Graph: res}, nil
 }

@@ -10,6 +10,7 @@ import (
 	"github.com/Ankr-network/ankr-protocol/shared/types"
 	"github.com/jackc/pgx/v4"
 	_ "github.com/jackc/pgx/v4/stdlib"
+	"github.com/samber/lo"
 	"strings"
 	"time"
 )
@@ -236,6 +237,31 @@ func (s *Service) EstimateTransactionCount(ctx context.Context) (uint64, error) 
 		return 0, err
 	}
 	return uint64(res), nil
+}
+
+func (s *Service) GetTransactionCountGraph(ctx context.Context, afterBlock, epochLength uint64) (map[uint64]uint64, error) {
+	rows, err := s.db.QueryContext(ctx, "SELECT block_number / $1, count(*) AS count FROM transactions WHERE block_number >= $2 GROUP BY block_number / $1", epochLength, afterBlock)
+	if err == pgx.ErrNoRows {
+		return nil, nil
+	} else if err != nil {
+		return nil, err
+	}
+	defer func() { _ = rows.Close() }()
+	type scanResult struct {
+		BlockNumber int64
+		Count       int64
+	}
+	var res []scanResult
+	for rows.Next() {
+		var t scanResult
+		if err := rows.Scan(&t.BlockNumber, &t.Count); err != nil {
+			return nil, err
+		}
+		res = append(res, t)
+	}
+	return lo.SliceToMap(res, func(t scanResult) (uint64, uint64) {
+		return uint64(t.BlockNumber) * epochLength, uint64(t.Count)
+	}), nil
 }
 
 func (s *Service) EstimateTransfersCount(ctx context.Context) (uint64, error) {

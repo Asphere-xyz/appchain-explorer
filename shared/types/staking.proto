@@ -105,6 +105,18 @@ message StakingStats {
   uint64 affected_block = 11;
 }
 
+message ChainConfig {
+  uint32 average_block_time = 1;
+  uint32 active_validators_length = 2;
+  uint32 epoch_block_interval = 3;
+  uint32 misdemeanor_threshold = 4;
+  uint32 felony_threshold = 5;
+  uint32 validator_jail_epoch_length = 6;
+  uint32 undelegate_period = 7;
+  string min_validator_stake_amount = 8;
+  string min_staking_amount = 9;
+}
+
 /**
  *        ____  ____   ____
  *   __ _|  _ \|  _ \ / ___|
@@ -124,6 +136,7 @@ service StakingGateway {
   rpc GetChains(GetChainsRequest) returns (GetChainsReply);
   rpc GetDelegators(GetDelegatorsRequest) returns (GetDelegatorsReply);
   rpc GetStats(GetStatsRequest) returns (GetStatsReply);
+  rpc GetTotalTxsGraph(GetTotalTxsGraphRequest) returns (GetTotalTxsGraphReply);
 }
 
 message GetValidatorsRequest {
@@ -198,5 +211,11 @@ message GetDelegatorsReply {
 message GetStatsRequest {
 }
 message GetStatsReply {
-    StakingStats stats = 1;
+  StakingStats stats = 1;
+}
+
+message GetTotalTxsGraphRequest {
+}
+message GetTotalTxsGraphReply {
+  map<uint64, uint64> graph = 1;
 }

@@ -24,6 +24,7 @@ abi:
 	cd genesis && yarn && yarn compile && node build-abi.js && cd ..
 	mkdir -p ./shared/staking/abigen
 	abigen --abi=./genesis/build/abi/Staking.json --type Staking --pkg=abigen --lang=go --out=./shared/staking/abigen/staking.go
+	abigen --abi=./genesis/build/abi/ChainConfig.json --type ChainConfig --pkg=abigen --lang=go --out=./shared/staking/abigen/chainconfig.go
 
 .PHONY: swagger
 swagger:
