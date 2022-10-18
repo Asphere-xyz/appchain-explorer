@@ -391,13 +391,13 @@ func (s *Service) GetMarketCap(ctx context.Context) (string, error) {
 	return "0", nil
 }
 
-func (s *Service) GetLatestBlock(ctx context.Context) (uint64, uint64, error) {
-	latestKnownBlockNumber, err := s.eth.BlockNumber(ctx)
+func (s *Service) GetLatestBlock(ctx context.Context) (uint64, uint64, uint64, error) {
+	latestKnownBlockNumber, err := s.eth.BlockByNumber(ctx, nil)
 	if err != nil {
-		return 0, 0, err
+		return 0, 0, 0, err
 	}
 	latestAffectedBlockNumber := s.state.GetLastAffectedBlock(ctx)
-	return latestKnownBlockNumber, latestAffectedBlockNumber, nil
+	return latestKnownBlockNumber.NumberU64(), latestAffectedBlockNumber, latestKnownBlockNumber.Time(), nil
 }
 
 func (s *Service) GetChainConfig() *types.ChainConfig {

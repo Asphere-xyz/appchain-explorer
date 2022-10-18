@@ -127,7 +127,7 @@ func (s *Server) GetStats(ctx context.Context, req *types.GetStatsRequest) (*typ
 	if stats.MarketCap, err = s.stakingService.GetMarketCap(ctx); err != nil {
 		return nil, err
 	}
-	if stats.KnownBlock, stats.AffectedBlock, err = s.stakingService.GetLatestBlock(ctx); err != nil {
+	if stats.KnownBlock, stats.AffectedBlock, _, err = s.stakingService.GetLatestBlock(ctx); err != nil {
 		return nil, err
 	}
 	return &types.GetStatsReply{
@@ -137,17 +137,23 @@ func (s *Server) GetStats(ctx context.Context, req *types.GetStatsRequest) (*typ
 
 func (s *Server) GetTotalTxsGraph(ctx context.Context, _ *types.GetTotalTxsGraphRequest) (*types.GetTotalTxsGraphReply, error) {
 	chainConfig := s.stakingService.GetChainConfig()
-	latestKnownBlock, _, err := s.stakingService.GetLatestBlock(ctx)
+	latestKnownBlock, _, latestBlockTime, err := s.stakingService.GetLatestBlock(ctx)
 	if err != nil {
 		return nil, err
 	}
-	afterBlock := int64(latestKnownBlock) - 7*24*time.Hour.Milliseconds()/int64(chainConfig.AverageBlockTime)
-	if afterBlock < 0 {
-		afterBlock = int64(0)
+	blocksMonthAgo := int64(latestKnownBlock) - 30*24*time.Hour.Milliseconds()/int64(chainConfig.AverageBlockTime)
+	if blocksMonthAgo < 0 {
+		blocksMonthAgo = int64(0)
 	}
-	res, err := s.databaseService.GetTransactionCountGraph(ctx, uint64(afterBlock), uint64(chainConfig.EpochBlockInterval))
+	res, err := s.databaseService.GetTransactionCountGraph(ctx, uint64(blocksMonthAgo), uint64(chainConfig.EpochBlockInterval))
 	if err != nil {
 		return nil, err
+	}
+	zeroBlockTime := latestBlockTime - latestKnownBlock*uint64(chainConfig.AverageBlockTime/1000)
+	for k, v := range res {
+		blockTime := zeroBlockTime + k*uint64(chainConfig.AverageBlockTime/1000)
+		delete(res, k)
+		res[blockTime] = v
 	}
 	return &types.GetTotalTxsGraphReply{Graph: res}, nil
 }
