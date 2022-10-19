@@ -7,7 +7,7 @@ on:
 
 
 env:
-  REGISTRY: harbor.stkr.io
+  REGISTRY: harbor.staking.ankr.com
   HARBOR_PROJECT: stkr
   STKR_HARBOR_USERNAME: 'robot$github-actions-stkr'
   RANCHER_SERVER_URL_DEV: "https://rancher.stkr-dev.ankr.com/v3"

@@ -150,10 +150,10 @@ func (s *Server) GetTotalTxsGraph(ctx context.Context, _ *types.GetTotalTxsGraph
 		return nil, err
 	}
 	zeroBlockTime := latestBlockTime - latestKnownBlock*uint64(chainConfig.AverageBlockTime/1000)
+	res2 := make(map[uint64]uint64)
 	for k, v := range res {
 		blockTime := zeroBlockTime + k*uint64(chainConfig.AverageBlockTime/1000)
-		delete(res, k)
-		res[blockTime] = v
+		res2[blockTime] = v
 	}
-	return &types.GetTotalTxsGraphReply{Graph: res}, nil
+	return &types.GetTotalTxsGraphReply{Graph: res2}, nil
 }
