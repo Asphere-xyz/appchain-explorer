@@ -1,6 +1,6 @@
 {{- if .Values.ingress.enabled -}}
 
-apiVersion: networking.k8s.io/v1beta1
+apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: {{ .Chart.Name }}
@@ -27,7 +27,10 @@ spec:
         paths:
           - path: {{ .Values.ingress.urlPath }}
             backend:
-              serviceName: {{ .Chart.Name }}
-              servicePort: {{ .Values.certificate.tlsPort }}
+              service:
+                name: {{ .Chart.Name }}
+                port:
+                  number: {{ .Values.certificate.tlsPort }}
+            pathType: ImplementationSpecific            
 {{- end }}
 
