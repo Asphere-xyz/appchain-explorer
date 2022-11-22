@@ -103,11 +103,16 @@ func (s *Server) GetChains(ctx context.Context, req *types.GetChainsRequest) (*t
 func (s *Server) GetStats(ctx context.Context, req *types.GetStatsRequest) (*types.GetStatsReply, error) {
 	var err error
 	stats := &types.StakingStats{
-		TotalHolders:   0,
 		TotalInsurance: "0",
-
-		TransferVolume_24H: "0",
-		ActiveUsers_7D:     0,
+	}
+	if stats.ActiveUsers_7D, err = s.databaseService.EstimateActiveUsers(ctx, 7*time.Hour*24); err != nil {
+		return nil, err
+	}
+	if stats.TotalHolders, err = s.databaseService.EstimateTokenHolders(ctx); err != nil {
+		return nil, err
+	}
+	if stats.TotalInsurance, err = s.databaseService.GetTotalIssuance(ctx); err != nil {
+		return nil, err
 	}
 	if stats.TotalValidators, err = s.stateDbService.GetTotalValidators(ctx); err != nil {
 		return nil, err
@@ -121,7 +126,7 @@ func (s *Server) GetStats(ctx context.Context, req *types.GetStatsRequest) (*typ
 	if stats.TotalStaked, err = s.stakingService.GetTotalStaked(ctx); err != nil {
 		return nil, err
 	}
-	if stats.MarketCap, err = s.stakingService.GetMarketCap(ctx); err != nil {
+	if stats.TransferVolume_24H, err = s.databaseService.GetTransferVolume(ctx, time.Hour*24); err != nil {
 		return nil, err
 	}
 	if stats.MarketCap, err = s.stakingService.GetMarketCap(ctx); err != nil {

@@ -6,11 +6,13 @@ import (
 	"encoding/binary"
 	"encoding/hex"
 	"github.com/Ankr-network/ankr-protocol/shared"
+	common2 "github.com/Ankr-network/ankr-protocol/shared/common"
 	"github.com/Ankr-network/ankr-protocol/shared/entity"
 	"github.com/Ankr-network/ankr-protocol/shared/types"
 	"github.com/jackc/pgx/v4"
 	_ "github.com/jackc/pgx/v4/stdlib"
 	"github.com/samber/lo"
+	"math/big"
 	"strings"
 	"time"
 )
@@ -264,10 +266,81 @@ func (s *Service) GetTransactionCountGraph(ctx context.Context, afterBlock, epoc
 	}), nil
 }
 
+// composed of transactions with non-zero value and token_transfers table row count
 func (s *Service) EstimateTransfersCount(ctx context.Context) (uint64, error) {
-	return s.EstimateTransactionCount(ctx)
+	row := s.db.QueryRowContext(ctx, "SELECT reltuples::BIGINT AS estimate FROM pg_class WHERE relname='token_transfers'")
+	if row.Err() == pgx.ErrNoRows {
+		return 0, nil
+	} else if row.Err() != nil {
+		return 0, row.Err()
+	}
+	var res int64
+	if err := row.Scan(&res); err != nil {
+		return 0, err
+	}
+	row = s.db.QueryRowContext(ctx, "SELECT count(*) AS estimate FROM transactions WHERE value > 0")
+	if row.Err() == pgx.ErrNoRows {
+		return 0, nil
+	} else if row.Err() != nil {
+		return 0, row.Err()
+	}
+	var res_txes int64
+	if err := row.Scan(&res_txes); err != nil {
+		return 0, err
+	}
+	return uint64(res + res_txes), nil
 }
 
 func (s *Service) EstimateTokenHolders(ctx context.Context) (uint64, error) {
-	return 0, nil
+	// TODO: too slow,  optimioze it
+	row := s.db.QueryRowContext(ctx, "SELECT count(*) AS holders FROM address_coin_balances_daily AS acbd WHERE acbd.day = (SELECT MAX(inn.day) FROM address_coin_balances_daily AS inn)")
+	if row.Err() == pgx.ErrNoRows {
+		return 0, nil
+	} else if row.Err() != nil {
+		return 0, row.Err()
+	}
+	var res int64
+	if err := row.Scan(&res); err != nil {
+		return 0, err
+	}
+	return uint64(res), nil
+}
+
+func (s *Service) EstimateActiveUsers(ctx context.Context, d time.Duration) (uint32, error) {
+	time_from := time.Now().Truncate(d)
+	row := s.db.QueryRowContext(ctx, "SELECT count(DISTINCT address_hash) AS holders FROM address_coin_balances WHERE value_fetched_at > to_timestamp($1)", time_from.Unix())
+	if row.Err() == pgx.ErrNoRows {
+		return 0, nil
+	} else if row.Err() != nil {
+		return 0, row.Err()
+	}
+	var res int64
+	if err := row.Scan(&res); err != nil {
+		return 0, err
+	}
+	return uint32(res), nil
+}
+
+func (s *Service) GetTransferVolume(ctx context.Context, duration time.Duration) (string, error) {
+	time_from := time.Now().Truncate(duration)
+	row := s.db.QueryRowContext(ctx, "SELECT COALESCE(sum(value), 0) AS volume FROM transactions WHERE updated_at > to_timestamp($1) AND value > 0", time_from.Unix())
+	if row.Err() == pgx.ErrNoRows {
+		return "0", nil
+	} else if row.Err() != nil {
+		return "0", row.Err()
+	}
+	var res string
+	if err := row.Scan(&res); err != nil {
+		return "0", err
+	}
+	n := new(big.Int)
+	n, ok := n.SetString(res, 10)
+	if !ok {
+		return "0", nil
+	}
+	return common2.ToEther(n), nil
+}
+
+func (s *Service) GetTotalIssuance(ctx context.Context) (string, error) {
+	return "0", nil
 }
