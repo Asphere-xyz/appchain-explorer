@@ -388,6 +388,7 @@ func (s *Service) GetTotalStaked(ctx context.Context) (string, error) {
 }
 
 func (s *Service) GetMarketCap(ctx context.Context) (string, error) {
+	//totalSupply := s.chainConfig.
 	return "0", nil
 }
 
