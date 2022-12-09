@@ -292,8 +292,11 @@ func (s *Service) EstimateTransfersCount(ctx context.Context) (uint64, error) {
 }
 
 func (s *Service) EstimateTokenHolders(ctx context.Context) (uint64, error) {
-	// TODO: too slow,  optimioze it
-	row := s.db.QueryRowContext(ctx, "SELECT count(*) AS holders FROM address_coin_balances_daily AS acbd WHERE acbd.day = (SELECT MAX(inn.day) FROM address_coin_balances_daily AS inn)")
+	// query := "SELECT count(*) AS holders FROM address_coin_balances_daily AS acbd WHERE acbd.day = (SELECT MAX(inn.day) FROM address_coin_balances_daily AS inn)"
+	// query := "SELECT count(*) AS holders FROM addresses AS a LEFT JOIN address_coin_balances AS acb ON a.hash=acb.address_hash WHERE a.updated_at = acb.updated_at AND acb.value > 0 "
+	// query := "SELECT count(distinct hash) AS holders FROM addresses"
+	query := "SELECT count(distinct address_hash) AS holders FROM address_coin_balances AS acb WHERE acb.value > 0"
+	row := s.db.QueryRowContext(ctx, query)
 	if row.Err() == pgx.ErrNoRows {
 		return 0, nil
 	} else if row.Err() != nil {
