@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"encoding/binary"
 	"encoding/hex"
+	"errors"
 	"github.com/Ankr-network/ankr-protocol/shared"
 	common2 "github.com/Ankr-network/ankr-protocol/shared/common"
 	"github.com/Ankr-network/ankr-protocol/shared/entity"
@@ -238,6 +239,9 @@ func (s *Service) EstimateTransactionCount(ctx context.Context) (uint64, error) 
 	if err := row.Scan(&res); err != nil {
 		return 0, err
 	}
+	if res == -1 {
+		return 0, errors.New("transaction table is not initialized")
+	}
 	return uint64(res), nil
 }
 
@@ -278,6 +282,9 @@ func (s *Service) EstimateTransfersCount(ctx context.Context) (uint64, error) {
 	if err := row.Scan(&res); err != nil {
 		return 0, err
 	}
+	if res == -1 {
+		return 0, errors.New("token_transfers table is not initialized")
+	}
 	row = s.db.QueryRowContext(ctx, "SELECT count(*) AS estimate FROM transactions WHERE value > 0")
 	if row.Err() == pgx.ErrNoRows {
 		return 0, nil
@@ -287,6 +294,9 @@ func (s *Service) EstimateTransfersCount(ctx context.Context) (uint64, error) {
 	var res_txes int64
 	if err := row.Scan(&res_txes); err != nil {
 		return 0, err
+	}
+	if res_txes == -1 {
+		return 0, errors.New("transaction table is not initialized")
 	}
 	return uint64(res + res_txes), nil
 }
