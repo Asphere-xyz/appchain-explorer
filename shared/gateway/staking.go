@@ -150,7 +150,8 @@ func (s *Server) GetTotalTxsGraph(ctx context.Context, _ *types.GetTotalTxsGraph
 	if blocksMonthAgo < 0 {
 		blocksMonthAgo = int64(0)
 	}
-	res, err := s.databaseService.GetTransactionCountGraph(ctx, uint64(blocksMonthAgo), uint64(chainConfig.EpochBlockInterval))
+	dayBlockInterval := uint64(24 * time.Hour.Milliseconds() / int64(chainConfig.AverageBlockTime))
+	res, err := s.databaseService.GetTransactionCountGraph(ctx, uint64(blocksMonthAgo), dayBlockInterval)
 	if err != nil {
 		return nil, err
 	}
