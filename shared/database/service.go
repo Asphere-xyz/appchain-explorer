@@ -245,8 +245,8 @@ func (s *Service) EstimateTransactionCount(ctx context.Context) (uint64, error) 
 	return uint64(res), nil
 }
 
-func (s *Service) GetTransactionCountGraph(ctx context.Context, afterBlock, epochLength uint64) (map[uint64]uint64, error) {
-	rows, err := s.db.QueryContext(ctx, "SELECT block_number / $1, count(*) AS count FROM transactions WHERE block_number >= $2 GROUP BY block_number / $1", epochLength, afterBlock)
+func (s *Service) GetTransactionCountGraph(ctx context.Context, afterBlock, blockInterval uint64) (map[uint64]uint64, error) {
+	rows, err := s.db.QueryContext(ctx, "SELECT block_number / $1, count(*) AS count FROM transactions WHERE block_number >= $2 GROUP BY block_number / $1", blockInterval, afterBlock)
 	if err == pgx.ErrNoRows {
 		return nil, nil
 	} else if err != nil {
@@ -266,7 +266,7 @@ func (s *Service) GetTransactionCountGraph(ctx context.Context, afterBlock, epoc
 		res = append(res, t)
 	}
 	return lo.SliceToMap(res, func(t scanResult) (uint64, uint64) {
-		return uint64(t.BlockNumber) * epochLength, uint64(t.Count)
+		return uint64(t.BlockNumber) * blockInterval, uint64(t.Count)
 	}), nil
 }
 
