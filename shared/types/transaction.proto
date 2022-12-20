@@ -10,7 +10,7 @@ package com.ankr;
 import "token_transfer.proto";
 
 enum TransactionStatus {
-  REVERTED = 0;
+  FAILED = 0;
   SUCCESS = 1;
   PENDING = 2;
 }
