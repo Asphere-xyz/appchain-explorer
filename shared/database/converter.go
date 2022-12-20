@@ -66,9 +66,13 @@ func txToProto(tx *entity.Transaction) *types.Transaction {
 	if tx.Input != nil {
 		txType = types.TransactionType_CONTRACT_CALL
 	}
+	status := int64(2)                           // pending by default
+	if tx.Status.Valid && tx.BlockNumber.Valid { // if confirmed - set status from table
+		status = tx.Status.Int64
+	}
 	return &types.Transaction{
 		TxHash:      fmt.Sprintf("0x%x", tx.Hash),
-		Status:      types.TransactionStatus(tx.Status.Int64),
+		Status:      types.TransactionStatus(status),
 		Value:       strconv.FormatFloat(tx.Value/1e18, 'f', 18, 64),
 		TxFee:       strconv.FormatFloat(tx.GasUsed.Float64*tx.GasPrice/1e18, 'f', 18, 64),
 		BlockNumber: uint32(tx.BlockNumber.Int64),
@@ -88,9 +92,13 @@ func txDetailsToProto(tx *entity.Transaction) *types.TransactionDetails {
 	if len(tx.Input) != 0 {
 		methodId = fmt.Sprintf("0x%x", tx.Input[0:4])
 	}
+	status := int64(2)                           // pending by default
+	if tx.Status.Valid && tx.BlockNumber.Valid { // if confirmed - set status from table
+		status = tx.Status.Int64
+	}
 	return &types.TransactionDetails{
 		TxHash:      fmt.Sprintf("0x%x", tx.Hash),
-		Status:      types.TransactionStatus(tx.Status.Int64),
+		Status:      types.TransactionStatus(status),
 		Error:       tx.Error.String,
 		BlockNumber: uint32(tx.BlockNumber.Int64),
 		CreatedAt:   uint32(tx.InsertedAt.Unix()),

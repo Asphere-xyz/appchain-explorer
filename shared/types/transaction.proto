@@ -12,6 +12,7 @@ import "token_transfer.proto";
 enum TransactionStatus {
   REVERTED = 0;
   SUCCESS = 1;
+  PENDING = 2;
 }
 
 enum TransactionType {
