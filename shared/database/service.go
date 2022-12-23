@@ -366,10 +366,32 @@ func (s *Service) GetTotalIssuance(ctx context.Context) (string, error) {
 	if err := row.Scan(&res); err != nil {
 		return "0", err
 	}
-	return res, nil
+	n := new(big.Int)
+	n, ok := n.SetString(res, 10)
+	if !ok {
+		return "0", nil
+	}
+	return common2.ToEther(n), nil
 }
 
 func (s *Service) GetMarketCap(ctx context.Context) (string, error) {
+	query2 := "SELECT closing_price AS price FROM market_history WHERE date in (SELECT MAX(date) FROM market_history)"
+	row2 := s.db.QueryRowContext(ctx, query2)
+	if row2.Err() == pgx.ErrNoRows {
+		return "0", nil
+	} else if row2.Err() != nil {
+		return "0", row2.Err()
+	}
+	var res2 string
+	if err := row2.Scan(&res2); err != nil {
+		return "0", err
+	}
+	p := new(big.Int)
+	p, ok := p.SetString(res2, 10)
+	if !ok {
+		return "0", nil
+	}
+
 	query := "SELECT SUM(value) AS volume FROM address_coin_balances"
 	row := s.db.QueryRowContext(ctx, query)
 	if row.Err() == pgx.ErrNoRows {
@@ -382,10 +404,10 @@ func (s *Service) GetMarketCap(ctx context.Context) (string, error) {
 		return "0", err
 	}
 	n := new(big.Int)
-	n, ok := n.SetString(res, 10)
+	n, ok = n.SetString(res, 10)
 	if !ok {
 		return "0", nil
 	}
-	//totalSupply := s.chainConfig.
-	return "0", nil
+
+	return common2.ToEther(p.Mul(p, n)), nil
 }

@@ -387,11 +387,6 @@ func (s *Service) GetTotalStaked(ctx context.Context) (string, error) {
 	return common2.ToEther(res), nil
 }
 
-func (s *Service) GetMarketCap(ctx context.Context) (string, error) {
-	//totalSupply := s.chainConfig.
-	return "0", nil
-}
-
 func (s *Service) GetLatestBlock(ctx context.Context) (uint64, uint64, uint64, error) {
 	latestKnownBlockNumber, err := s.eth.BlockByNumber(ctx, nil)
 	if err != nil {
