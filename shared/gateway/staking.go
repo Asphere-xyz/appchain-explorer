@@ -130,7 +130,7 @@ func (s *Server) GetStats(ctx context.Context, req *types.GetStatsRequest) (*typ
 	if stats.TransferVolume_24H, err = s.databaseService.GetTransferVolume(ctx, time.Hour*24); err != nil {
 		return nil, err
 	}
-	if stats.MarketCap, err = s.stakingService.GetMarketCap(ctx); err != nil {
+	if stats.MarketCap, err = s.databaseService.GetMarketCap(ctx); err != nil {
 		return nil, err
 	}
 	if stats.KnownBlock, stats.AffectedBlock, _, err = s.stakingService.GetLatestBlock(ctx); err != nil {
