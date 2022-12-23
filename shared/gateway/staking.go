@@ -103,6 +103,7 @@ func (s *Server) GetChains(ctx context.Context, req *types.GetChainsRequest) (*t
 func (s *Server) GetStats(ctx context.Context, req *types.GetStatsRequest) (*types.GetStatsReply, error) {
 	var err error
 	stats := &types.StakingStats{
+		TotalIssuance:  "0",
 		TotalInsurance: "0",
 	}
 	if stats.ActiveUsers_7D, err = s.databaseService.EstimateActiveUsers(ctx, 7*time.Hour*24); err != nil {
@@ -111,7 +112,7 @@ func (s *Server) GetStats(ctx context.Context, req *types.GetStatsRequest) (*typ
 	if stats.TotalHolders, err = s.databaseService.EstimateTokenHolders(ctx); err != nil {
 		return nil, err
 	}
-	if stats.TotalInsurance, err = s.databaseService.GetTotalIssuance(ctx); err != nil {
+	if stats.TotalIssuance, err = s.databaseService.GetTotalIssuance(ctx); err != nil {
 		return nil, err
 	}
 	if stats.TotalValidators, err = s.stateDbService.GetTotalValidators(ctx); err != nil {
