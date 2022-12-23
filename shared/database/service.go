@@ -302,10 +302,10 @@ func (s *Service) EstimateTransfersCount(ctx context.Context) (uint64, error) {
 }
 
 func (s *Service) EstimateTokenHolders(ctx context.Context) (uint64, error) {
-	// query := "SELECT count(*) AS holders FROM address_coin_balances_daily AS acbd WHERE acbd.day = (SELECT MAX(inn.day) FROM address_coin_balances_daily AS inn)"
+	query := "SELECT count(*) AS holders FROM address_coin_balances_daily AS acbd WHERE acbd.day = (SELECT MAX(inn.day) FROM address_coin_balances_daily AS inn)"
 	// query := "SELECT count(*) AS holders FROM addresses AS a LEFT JOIN address_coin_balances AS acb ON a.hash=acb.address_hash WHERE a.updated_at = acb.updated_at AND acb.value > 0 "
 	// query := "SELECT count(distinct hash) AS holders FROM addresses"
-	query := "SELECT count(distinct address_hash) AS holders FROM address_coin_balances AS acb WHERE acb.value > 0"
+	// query := "SELECT count(distinct address_hash) AS holders FROM address_coin_balances AS acb WHERE acb.value > 0"
 	row := s.db.QueryRowContext(ctx, query)
 	if row.Err() == pgx.ErrNoRows {
 		return 0, nil
@@ -366,10 +366,26 @@ func (s *Service) GetTotalIssuance(ctx context.Context) (string, error) {
 	if err := row.Scan(&res); err != nil {
 		return "0", err
 	}
+	return res, nil
+}
+
+func (s *Service) GetMarketCap(ctx context.Context) (string, error) {
+	query := "SELECT SUM(value) AS volume FROM address_coin_balances"
+	row := s.db.QueryRowContext(ctx, query)
+	if row.Err() == pgx.ErrNoRows {
+		return "0", nil
+	} else if row.Err() != nil {
+		return "0", row.Err()
+	}
+	var res string
+	if err := row.Scan(&res); err != nil {
+		return "0", err
+	}
 	n := new(big.Int)
 	n, ok := n.SetString(res, 10)
 	if !ok {
 		return "0", nil
 	}
-	return common2.ToEther(n), nil
+	//totalSupply := s.chainConfig.
+	return "0", nil
 }
