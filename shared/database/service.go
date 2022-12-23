@@ -355,5 +355,21 @@ func (s *Service) GetTransferVolume(ctx context.Context, duration time.Duration)
 }
 
 func (s *Service) GetTotalIssuance(ctx context.Context) (string, error) {
-	return "0", nil
+	query := "SELECT SUM(value) AS volume FROM address_coin_balances"
+	row := s.db.QueryRowContext(ctx, query)
+	if row.Err() == pgx.ErrNoRows {
+		return "0", nil
+	} else if row.Err() != nil {
+		return "0", row.Err()
+	}
+	var res string
+	if err := row.Scan(&res); err != nil {
+		return "0", err
+	}
+	n := new(big.Int)
+	n, ok := n.SetString(res, 10)
+	if !ok {
+		return "0", nil
+	}
+	return common2.ToEther(n), nil
 }
