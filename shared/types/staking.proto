@@ -96,13 +96,14 @@ message StakingStats {
   uint64 total_txs = 2;
   uint64 total_transfers = 3;
   uint64 total_holders = 4;
-  string total_insurance = 5;
+  string total_issuance = 5;
   string total_staked = 6;
   string market_cap = 7;
   string transfer_volume_24h = 8;
   uint32 active_users_7d = 9;
   uint64 known_block = 10;
   uint64 affected_block = 11;
+  string total_insurance = 12;
 }
 
 message ChainConfig {
