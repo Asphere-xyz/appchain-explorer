@@ -21,8 +21,11 @@ import (
 	"math/big"
 	"net/http"
 	"strings"
+	"sync"
 	"time"
 )
+
+var AnkrAprMultiplayer = big.NewFloat(365 * 7)
 
 type Service struct {
 	state *database.StateDb
@@ -33,12 +36,19 @@ type Service struct {
 	staking     *abigen.Staking
 	chainConfig *abigen.ChainConfig
 	// state
+
+	cfgMux            sync.Mutex
 	cachedChainConfig *types.ChainConfig
-	cachedChains      []*types.Chain
+
+	aprMux sync.Mutex
+	apr    *big.Float
+
+	chainId      *big.Int
+	cachedChains []*types.Chain
 }
 
 func NewService(state *database.StateDb) *Service {
-	return &Service{state: state}
+	return &Service{state: state, apr: new(big.Float)}
 }
 
 func (s *Service) Start(cp shared.IConfigProvider) (err error) {
@@ -58,6 +68,12 @@ func (s *Service) Start(cp shared.IConfigProvider) (err error) {
 		return err
 	}
 	s.cachedChainConfig = newChainConfig
+
+	s.chainId, err = s.eth.ChainID(context.Background())
+	if err != nil {
+		return errors.Wrap(err, "failed to get chain id")
+	}
+
 	go func() {
 		if err := s.backgroundWorker(); err != nil {
 			log.Fatalf("failed to start background worker: %+v", err)
@@ -74,6 +90,10 @@ func (s *Service) backgroundWorker() (err error) {
 		if err != nil {
 			return err
 		}
+
+		if err = s.updateAPY(); err != nil {
+			return errors.Wrap(err, "failed to update apr")
+		}
 	}
 	// run worker
 	refreshChainConfig := time.Tick(10 * time.Minute)
@@ -88,7 +108,9 @@ func (s *Service) backgroundWorker() (err error) {
 			if err != nil {
 				return err
 			}
+			s.cfgMux.Lock()
 			s.cachedChainConfig = newChainConfig
+			s.cfgMux.Unlock()
 		case <-updateChainsTick:
 			s.cachedChains, err = s.GetChains(context.TODO())
 			if err != nil {
@@ -98,6 +120,9 @@ func (s *Service) backgroundWorker() (err error) {
 			_, err = s.processEventLogs(context.TODO())
 			if err != nil {
 				return err
+			}
+			if err = s.updateAPY(); err != nil {
+				return errors.Wrap(err, "failed to update apr")
 			}
 		}
 	}
@@ -397,7 +422,80 @@ func (s *Service) GetLatestBlock(ctx context.Context) (uint64, uint64, uint64, e
 }
 
 func (s *Service) GetChainConfig() *types.ChainConfig {
-	return s.cachedChainConfig
+	s.cfgMux.Lock()
+	result := *s.cachedChainConfig
+	s.cfgMux.Unlock()
+	return &result
+}
+
+func (s *Service) GetAPY() *types.ChainConfig {
+	s.cfgMux.Lock()
+	result := *s.cachedChainConfig
+	s.cfgMux.Unlock()
+	return &result
+}
+
+func (s *Service) updateAPY() error {
+	validators, err := s.staking.GetValidators(nil)
+	if err != nil {
+		return errors.Wrap(err, "failed to get validators")
+	}
+	result := new(big.Float)
+	for _, validator := range validators {
+		limit, err := s.state.GetTotalValidatorDeposits(context.Background(), validator)
+		if err != nil {
+			return errors.Wrap(err, "failed to get total validator deposits")
+		}
+
+		if limit == 0 {
+			continue
+		}
+		// get last deposit for validator
+		deposits, err := s.state.GetValidatorDeposits(context.Background(), validator, int64(limit-1), 1)
+		if err != nil {
+			return errors.Wrapf(err, "failed to get validators deposits %s", validator)
+		}
+
+		deposit := deposits[0]
+
+		status, err := s.staking.GetValidatorStatusAtEpoch(nil, validator, deposit.Epoch)
+		if err != nil {
+			return errors.Wrap(err, "failed to get status at epoch")
+		}
+
+		totalStaked := new(big.Float).SetInt(status.TotalDelegated)
+		apr, ok := new(big.Float).SetString(deposit.Amount)
+		if !ok {
+			return errors.Wrapf(err, "failed to cast amount %s from tx %s", deposit.Amount, deposit.TransactionHash)
+		}
+
+		// eth to wei
+		apr.Mul(apr, big.NewFloat(1e18))
+
+		// calculate apr with assumption that we pay +- eq reward
+		apr = apr.Quo(apr, totalStaked).Mul(apr, AnkrAprMultiplayer)
+
+		// choose max apr
+		if apr.Cmp(result) > 0 {
+			result.Set(apr)
+		}
+	}
+
+	s.aprMux.Lock()
+	s.apr.Set(result)
+	s.aprMux.Unlock()
+	return nil
+}
+
+func (s *Service) GetChainID() *big.Int {
+	return s.chainId
+}
+
+func (s *Service) GetApr() *big.Float {
+	s.aprMux.Lock()
+	result := new(big.Float).Set(s.apr)
+	s.aprMux.Unlock()
+	return result
 }
 
 func (s *Service) GetValidators(ctx context.Context) (result []*types.Validator, err error) {

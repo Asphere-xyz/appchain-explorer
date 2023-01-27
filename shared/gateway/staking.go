@@ -2,6 +2,7 @@ package gateway
 
 import (
 	"context"
+	"fmt"
 	"github.com/Ankr-network/ankr-protocol/shared/types"
 	"github.com/ethereum/go-ethereum/common"
 	"time"
@@ -43,6 +44,7 @@ func (s *Server) GetValidatorDeposits(ctx context.Context, req *types.GetValidat
 	if req.Size_ == 0 || req.Size_ > 1000 {
 		req.Size_ = 1000
 	}
+	fmt.Println("validator", req.Validator)
 	result, err := s.stakingService.GetValidatorDeposits(ctx, common.HexToAddress(req.Validator), req.Offset, req.Size_)
 	if err != nil {
 		return nil, err
@@ -118,6 +120,11 @@ func (s *Server) GetStats(ctx context.Context, req *types.GetStatsRequest) (*typ
 	if stats.TotalValidators, err = s.stateDbService.GetTotalValidators(ctx); err != nil {
 		return nil, err
 	}
+	if stats.TotalDelegators, err = s.stateDbService.GetTotalDelegators(ctx); err != nil {
+		return nil, err
+	}
+	stats.ChainId = s.stakingService.GetChainID().Uint64()
+	stats.Apy = s.stakingService.GetApr().String()
 	if stats.TotalTxs, err = s.databaseService.EstimateTransactionCount(ctx); err != nil {
 		return nil, err
 	}
