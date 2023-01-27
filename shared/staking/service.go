@@ -25,7 +25,8 @@ import (
 	"time"
 )
 
-var AnkrAprMultiplayer = big.NewFloat(365 * 7)
+// we pay reward every day
+var AnkrAprMultiplayer = big.NewFloat(36500)
 
 type Service struct {
 	state *database.StateDb
