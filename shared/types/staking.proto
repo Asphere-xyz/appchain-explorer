@@ -104,6 +104,9 @@ message StakingStats {
   uint64 known_block = 10;
   uint64 affected_block = 11;
   string total_insurance = 12;
+  uint64 total_delegators = 13;
+  uint64 chain_id = 14;
+  string apy = 15;
 }
 
 message ChainConfig {

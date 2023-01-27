@@ -4,6 +4,7 @@ go 1.18
 
 require (
 	github.com/ethereum/go-ethereum v1.10.21
+	github.com/go-redis/redis/v9 v9.0.0-beta.2
 	github.com/gogo/protobuf v1.3.2
 	github.com/golang/protobuf v1.5.2
 	github.com/google/uuid v1.3.0
@@ -18,6 +19,7 @@ require (
 	github.com/olebedev/emitter v0.0.0-20190110104742-e8d1457e6aee
 	github.com/pkg/errors v0.9.1
 	github.com/samber/lo v1.28.0
+	github.com/shopspring/decimal v1.3.1
 	github.com/sirupsen/logrus v1.6.0
 	github.com/spf13/viper v1.8.1
 	github.com/stretchr/testify v1.7.2
@@ -36,11 +38,8 @@ require (
 	github.com/decred/dcrd/dcrec/secp256k1/v4 v4.0.1 // indirect
 	github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f // indirect
 	github.com/fsnotify/fsnotify v1.4.9 // indirect
-	github.com/ghodss/yaml v1.0.0 // indirect
 	github.com/go-ole/go-ole v1.2.1 // indirect
-	github.com/go-redis/redis/v9 v9.0.0-beta.2 // indirect
 	github.com/go-stack/stack v1.8.0 // indirect
-	github.com/golang/glog v0.0.0-20160126235308-23def4e6c14b // indirect
 	github.com/hashicorp/hcl v1.0.0 // indirect
 	github.com/jackc/chunkreader/v2 v2.0.1 // indirect
 	github.com/jackc/pgconn v1.10.0 // indirect
@@ -61,7 +60,6 @@ require (
 	github.com/prometheus/procfs v0.8.0 // indirect
 	github.com/rjeczalik/notify v0.9.1 // indirect
 	github.com/shirou/gopsutil v3.21.4-0.20210419000835-c7a38de76ee5+incompatible // indirect
-	github.com/shopspring/decimal v1.3.1 // indirect
 	github.com/spf13/afero v1.6.0 // indirect
 	github.com/spf13/cast v1.3.1 // indirect
 	github.com/spf13/jwalterweatherman v1.1.0 // indirect

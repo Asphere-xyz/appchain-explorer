@@ -6,5 +6,5 @@ charts/requirements.lock
 charts/charts/
 certs/prod/
 .vscode
-
+docker-compose.yaml
 web/node_modules
