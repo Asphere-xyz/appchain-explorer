@@ -29,7 +29,8 @@ import (
 var AnkrAprMultiplayer = big.NewFloat(36500)
 
 type Service struct {
-	state *database.StateDb
+	state           *database.StateDb
+	databaseService *database.Service
 	// start
 	config *Config
 	eth    *ethclient.Client
@@ -41,15 +42,31 @@ type Service struct {
 	cfgMux            sync.Mutex
 	cachedChainConfig *types.ChainConfig
 
-	aprMux sync.Mutex
-	apr    *big.Float
+	aprMux           sync.Mutex
+	apr              *big.Float
+	lastCheckedEpoch uint64
 
 	chainId      *big.Int
 	cachedChains []*types.Chain
+
+	statsMux sync.Mutex
+	stats    types.StakingStats
 }
 
-func NewService(state *database.StateDb) *Service {
-	return &Service{state: state, apr: new(big.Float)}
+func NewService(state *database.StateDb, service *database.Service) *Service {
+	return &Service{
+		state:           state,
+		apr:             new(big.Float),
+		databaseService: service,
+		stats: types.StakingStats{
+			Apy:                "0",
+			TotalIssuance:      "0",
+			TotalStaked:        "0",
+			MarketCap:          "0",
+			TransferVolume_24H: "0",
+			TotalInsurance:     "0",
+		},
+	}
 }
 
 func (s *Service) Start(cp shared.IConfigProvider) (err error) {
@@ -91,15 +108,40 @@ func (s *Service) backgroundWorker() (err error) {
 		if err != nil {
 			return err
 		}
-
-		if err = s.updateAPY(); err != nil {
-			return errors.Wrap(err, "failed to update apr")
-		}
 	}
+
+	apr, err := s.state.GetLastApy(context.Background())
+	if err != nil {
+		return errors.Wrap(err, "failed to get last apy")
+	}
+
+	if apr != "" {
+		s.apr.SetString(apr)
+	}
+
+	aprEpoch, err := s.state.GetLastApyEpoch(context.Background())
+	if err != nil {
+		return errors.Wrap(err, "failed to get last apy")
+	}
+
+	if aprEpoch != 0 {
+		s.lastCheckedEpoch = aprEpoch
+	}
+
+	if err = s.updateStats(); err != nil {
+		return errors.Wrap(err, "failed to update stats")
+	}
+
+	if err = s.updateAPY(); err != nil {
+		return errors.Wrap(err, "failed to update apr")
+	}
+
 	// run worker
 	refreshChainConfig := time.Tick(10 * time.Minute)
 	updateChainsTick := time.Tick(15 * time.Minute)
 	processEventLogsTick := time.Tick(10 * time.Second)
+	updateAprTick := time.Tick(24 * time.Hour)
+	updateStatsTick := time.Tick(time.Hour)
 	for {
 		var err error
 		select {
@@ -112,6 +154,14 @@ func (s *Service) backgroundWorker() (err error) {
 			s.cfgMux.Lock()
 			s.cachedChainConfig = newChainConfig
 			s.cfgMux.Unlock()
+		case <-updateAprTick:
+			if err := s.updateAPY(); err != nil {
+				return err
+			}
+		case <-updateStatsTick:
+			if err := s.updateStats(); err != nil {
+				return err
+			}
 		case <-updateChainsTick:
 			s.cachedChains, err = s.GetChains(context.TODO())
 			if err != nil {
@@ -121,9 +171,6 @@ func (s *Service) backgroundWorker() (err error) {
 			_, err = s.processEventLogs(context.TODO())
 			if err != nil {
 				return err
-			}
-			if err = s.updateAPY(); err != nil {
-				return errors.Wrap(err, "failed to update apr")
 			}
 		}
 	}
@@ -441,51 +488,118 @@ func (s *Service) updateAPY() error {
 	if err != nil {
 		return errors.Wrap(err, "failed to get validators")
 	}
+
+	currentEpoch, err := s.staking.CurrentEpoch(nil)
+	if err != nil {
+		return errors.Wrap(err, "failed to get current epoch")
+	}
+
 	result := new(big.Float)
-	for _, validator := range validators {
-		limit, err := s.state.GetTotalValidatorDeposits(context.Background(), validator)
-		if err != nil {
-			return errors.Wrap(err, "failed to get total validator deposits")
+	// go through all epoch and try to calculate apr for validators based on reward that received within epoch.
+	// within calculated apr's we choose the biggest one
+	period := currentEpoch
+
+	if s.lastCheckedEpoch != 0 {
+		period = currentEpoch - s.lastCheckedEpoch
+	}
+
+	for i := uint64(1); i < period; i++ {
+		epoch := currentEpoch - i
+		fmt.Println(epoch)
+		for _, validator := range validators {
+			status, err := s.staking.GetValidatorStatusAtEpoch(nil, validator, epoch)
+			if err != nil {
+				return errors.Wrap(err, "failed to get status at epoch")
+			}
+			if status.Status != 1 {
+				log.Debugf("validator %s is not active", validator.Hex())
+				continue
+			}
+
+			totalStaked := new(big.Float).SetInt(status.TotalDelegated)
+			apr := new(big.Float).SetInt(status.TotalRewards)
+			// calculate apr with assumption that we pay +- eq reward
+			apr = apr.Quo(apr, totalStaked).Mul(apr, AnkrAprMultiplayer)
+			// choose max apr
+			if apr.Cmp(result) > 0 {
+				result.Set(apr)
+			}
 		}
 
-		if limit == 0 {
-			continue
-		}
-		// get last deposit for validator
-		deposits, err := s.state.GetValidatorDeposits(context.Background(), validator, int64(limit-1), 1)
-		if err != nil {
-			return errors.Wrapf(err, "failed to get validators deposits %s", validator)
-		}
-
-		deposit := deposits[0]
-
-		status, err := s.staking.GetValidatorStatusAtEpoch(nil, validator, deposit.Epoch)
-		if err != nil {
-			return errors.Wrap(err, "failed to get status at epoch")
-		}
-
-		totalStaked := new(big.Float).SetInt(status.TotalDelegated)
-		apr, ok := new(big.Float).SetString(deposit.Amount)
-		if !ok {
-			return errors.Wrapf(err, "failed to cast amount %s from tx %s", deposit.Amount, deposit.TransactionHash)
-		}
-
-		// eth to wei
-		apr.Mul(apr, big.NewFloat(1e18))
-
-		// calculate apr with assumption that we pay +- eq reward
-		apr = apr.Quo(apr, totalStaked).Mul(apr, AnkrAprMultiplayer)
-
-		// choose max apr
-		if apr.Cmp(result) > 0 {
-			result.Set(apr)
+		if result.Cmp(new(big.Float)) > 0 {
+			break
 		}
 	}
 
-	s.aprMux.Lock()
-	s.apr.Set(result)
-	s.aprMux.Unlock()
+	s.lastCheckedEpoch = currentEpoch - 1
+	if err := s.state.SetLastApyEpoch(context.Background(), s.lastCheckedEpoch); err != nil {
+		log.WithError(err).Error("failed to set last apy epoch")
+	}
+
+	if result.Cmp(new(big.Float)) > 0 {
+		s.aprMux.Lock()
+		s.apr.Set(result)
+		s.aprMux.Unlock()
+
+		if err := s.state.SetLastApy(context.Background(), s.apr.String()); err != nil {
+			log.WithError(err).Error("failed to set last apy")
+		}
+	}
+
 	return nil
+}
+
+func (s *Service) updateStats() (err error) {
+	ctx := context.Background()
+	stats := types.StakingStats{}
+	if stats.ActiveUsers_7D, err = s.databaseService.EstimateActiveUsers(ctx, 7*time.Hour*24); err != nil {
+		return errors.Wrap(err, "failed to estimate active users")
+	}
+	if stats.TotalHolders, err = s.databaseService.EstimateTokenHolders(ctx); err != nil {
+		return errors.Wrap(err, "failed to estimate token holdres")
+	}
+	if stats.TotalIssuance, err = s.databaseService.GetTotalIssuance(ctx); err != nil {
+		return errors.Wrap(err, "failed to get total issuance")
+	}
+	if stats.TotalValidators, err = s.state.GetTotalValidators(ctx); err != nil {
+		return errors.Wrap(err, "failed to get total validators")
+	}
+	if stats.TotalDelegators, err = s.state.GetTotalDelegators(ctx); err != nil {
+		return errors.Wrap(err, "failed to get total delegators")
+	}
+	stats.ChainId = s.GetChainID().Uint64()
+	stats.Apy = s.GetApr().String()
+	if stats.TotalTxs, err = s.databaseService.EstimateTransactionCount(ctx); err != nil {
+		return errors.Wrap(err, "failed to estimate tx count")
+	}
+	if stats.TotalTransfers, err = s.databaseService.EstimateTransfersCount(ctx); err != nil {
+		return errors.Wrap(err, "failed to estimate transfers count")
+	}
+	if stats.TotalStaked, err = s.GetTotalStaked(ctx); err != nil {
+		return errors.Wrap(err, "failed to get total staked")
+	}
+	if stats.TransferVolume_24H, err = s.databaseService.GetTransferVolume(ctx, time.Hour*24); err != nil {
+		return errors.Wrap(err, "failed to get transfer volume")
+	}
+	if stats.MarketCap, err = s.databaseService.GetMarketCap(ctx); err != nil {
+		return errors.Wrap(err, "failed to get total market cap")
+	}
+	if stats.KnownBlock, s.stats.AffectedBlock, _, err = s.GetLatestBlock(ctx); err != nil {
+		return errors.Wrap(err, "failed to get latestBlock")
+	}
+
+	s.statsMux.Lock()
+	s.stats = stats
+	s.statsMux.Unlock()
+
+	return
+}
+
+func (s *Service) GetStats() types.StakingStats {
+	s.statsMux.Lock()
+	result := s.stats
+	s.statsMux.Unlock()
+	return result
 }
 
 func (s *Service) GetChainID() *big.Int {

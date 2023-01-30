@@ -10,6 +10,7 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	types2 "github.com/ethereum/go-ethereum/core/types"
 	"github.com/go-redis/redis/v9"
+	"github.com/pkg/errors"
 	"github.com/shopspring/decimal"
 	log "github.com/sirupsen/logrus"
 	"strconv"
@@ -17,6 +18,8 @@ import (
 )
 
 const redisLatestAffectedBlock = "sidechain-explorer/latest-affected-block"
+const redisLastApyEpoch = "sidechain-explorer/latest-apy-epoch"
+const redisLastApy = "sidechain-explorer/latest-apy"
 const redisValidatorKey = "sidechain-explorer/validators"
 const redisValidatorHistoryKey = "sidechain-explorer/validator-history/%s"
 const redisValidatorSlashingKey = "sidechain-explorer/validator-slashing/%s"
@@ -50,6 +53,32 @@ func (s *StateDb) GetLastAffectedBlock(ctx context.Context) (result uint64) {
 		log.Fatalf("failed to read latest affected block: %+v", err)
 	}
 	return result
+}
+
+func (s *StateDb) GetLastApyEpoch(ctx context.Context) (result uint64, err error) {
+	err = s.con.Get(ctx, redisLastApyEpoch).Scan(&result)
+	if err != nil && err != redis.Nil {
+		return result, errors.Wrap(err, "failed to scan last apy epoch")
+	}
+	return result, nil
+}
+
+func (s *StateDb) SetLastApyEpoch(ctx context.Context, apyEpoch uint64) error {
+	err := s.con.Set(ctx, redisLastApyEpoch, apyEpoch, 0).Err()
+	return errors.Wrap(err, "failed to set last apy epoch")
+}
+
+func (s *StateDb) SetLastApy(ctx context.Context, apy string) error {
+	err := s.con.Set(ctx, redisLastApy, apy, 0).Err()
+	return errors.Wrap(err, "failed to set last apy epoch")
+}
+
+func (s *StateDb) GetLastApy(ctx context.Context) (result string, err error) {
+	err = s.con.Get(ctx, redisLastApy).Scan(&result)
+	if err != nil && err != redis.Nil {
+		return result, errors.Wrap(err, "failed to scan last apy epoch")
+	}
+	return result, nil
 }
 
 func (s *StateDb) GetValidators(ctx context.Context) (result []*types.Validator, err error) {

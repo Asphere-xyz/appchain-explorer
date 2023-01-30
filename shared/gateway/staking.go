@@ -102,49 +102,10 @@ func (s *Server) GetChains(ctx context.Context, req *types.GetChainsRequest) (*t
 	return &types.GetChainsReply{Chains: result[:newSize], HasMore: hasMore}, nil
 }
 
-func (s *Server) GetStats(ctx context.Context, req *types.GetStatsRequest) (*types.GetStatsReply, error) {
-	var err error
-	stats := &types.StakingStats{
-		TotalIssuance:  "0",
-		TotalInsurance: "0",
-	}
-	if stats.ActiveUsers_7D, err = s.databaseService.EstimateActiveUsers(ctx, 7*time.Hour*24); err != nil {
-		return nil, err
-	}
-	if stats.TotalHolders, err = s.databaseService.EstimateTokenHolders(ctx); err != nil {
-		return nil, err
-	}
-	if stats.TotalIssuance, err = s.databaseService.GetTotalIssuance(ctx); err != nil {
-		return nil, err
-	}
-	if stats.TotalValidators, err = s.stateDbService.GetTotalValidators(ctx); err != nil {
-		return nil, err
-	}
-	if stats.TotalDelegators, err = s.stateDbService.GetTotalDelegators(ctx); err != nil {
-		return nil, err
-	}
-	stats.ChainId = s.stakingService.GetChainID().Uint64()
-	stats.Apy = s.stakingService.GetApr().String()
-	if stats.TotalTxs, err = s.databaseService.EstimateTransactionCount(ctx); err != nil {
-		return nil, err
-	}
-	if stats.TotalTransfers, err = s.databaseService.EstimateTransfersCount(ctx); err != nil {
-		return nil, err
-	}
-	if stats.TotalStaked, err = s.stakingService.GetTotalStaked(ctx); err != nil {
-		return nil, err
-	}
-	if stats.TransferVolume_24H, err = s.databaseService.GetTransferVolume(ctx, time.Hour*24); err != nil {
-		return nil, err
-	}
-	if stats.MarketCap, err = s.databaseService.GetMarketCap(ctx); err != nil {
-		return nil, err
-	}
-	if stats.KnownBlock, stats.AffectedBlock, _, err = s.stakingService.GetLatestBlock(ctx); err != nil {
-		return nil, err
-	}
+func (s *Server) GetStats(_ context.Context, _ *types.GetStatsRequest) (*types.GetStatsReply, error) {
+	stats := s.stakingService.GetStats()
 	return &types.GetStatsReply{
-		Stats: stats,
+		Stats: &stats,
 	}, nil
 }
 
