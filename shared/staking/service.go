@@ -505,7 +505,6 @@ func (s *Service) updateAPY() error {
 
 	for i := uint64(1); i < period; i++ {
 		epoch := currentEpoch - i
-		fmt.Println(epoch)
 		for _, validator := range validators {
 			status, err := s.staking.GetValidatorStatusAtEpoch(nil, validator, epoch)
 			if err != nil {
