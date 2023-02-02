@@ -2,7 +2,6 @@ package gateway
 
 import (
 	"context"
-	"fmt"
 	"github.com/Ankr-network/ankr-protocol/shared/types"
 	"github.com/ethereum/go-ethereum/common"
 	"time"
@@ -44,7 +43,6 @@ func (s *Server) GetValidatorDeposits(ctx context.Context, req *types.GetValidat
 	if req.Size_ == 0 || req.Size_ > 1000 {
 		req.Size_ = 1000
 	}
-	fmt.Println("validator", req.Validator)
 	result, err := s.stakingService.GetValidatorDeposits(ctx, common.HexToAddress(req.Validator), req.Offset, req.Size_)
 	if err != nil {
 		return nil, err
