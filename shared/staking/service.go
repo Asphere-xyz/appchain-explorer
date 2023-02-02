@@ -28,6 +28,8 @@ import (
 // we pay reward every day
 var AnkrAprMultiplayer = big.NewFloat(36500)
 
+const minApr = 0.0001
+
 type Service struct {
 	state           *database.StateDb
 	databaseService *database.Service
@@ -533,6 +535,10 @@ func (s *Service) updateAPY() error {
 	s.lastCheckedEpoch = currentEpoch - 1
 	if err := s.state.SetLastApyEpoch(context.Background(), s.lastCheckedEpoch); err != nil {
 		log.WithError(err).Error("failed to set last apy epoch")
+	}
+
+	if result.Cmp(new(big.Float).SetFloat64(minApr)) < 0 {
+		return nil
 	}
 
 	if result.Cmp(new(big.Float)) > 0 {
