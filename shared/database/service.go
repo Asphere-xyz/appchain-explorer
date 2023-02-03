@@ -11,6 +11,7 @@ import (
 	"github.com/Ankr-network/appchain-explorer/shared/types"
 	"github.com/jackc/pgx/v4"
 	_ "github.com/jackc/pgx/v4/stdlib"
+	"github.com/pkg/errors"
 	"github.com/samber/lo"
 	"math/big"
 	"strings"
@@ -374,30 +375,34 @@ func (s *Service) GetTotalIssuance(ctx context.Context) (string, error) {
 }
 
 func (s *Service) GetMarketCap(ctx context.Context) (string, error) {
-	query2 := "SELECT closing_price AS price FROM market_history WHERE date in (SELECT MAX(date) FROM market_history)"
-	row2 := s.db.QueryRowContext(ctx, query2)
-	if row2.Err() == pgx.ErrNoRows {
-		return "0", nil
-	} else if row2.Err() != nil {
-		return "0", row2.Err()
+	selectHistory := "SELECT closing_price AS price FROM market_history WHERE date in (SELECT MAX(date) FROM market_history)"
+	result := s.db.QueryRowContext(ctx, selectHistory)
+	if result.Err() != nil {
+		if errors.Is(result.Err(), pgx.ErrNoRows) {
+			return "0", nil
+		}
+		return "0", errors.Wrap(result.Err(), "failed to get closing price")
 	}
-	var res2 string
-	if err := row2.Scan(&res2); err != nil {
+
+	var resultStr string
+	if err := result.Scan(&resultStr); err != nil {
 		return "0", err
 	}
 	p := new(big.Int)
-	p, ok := p.SetString(res2, 10)
+	p, ok := p.SetString(resultStr, 10)
 	if !ok {
 		return "0", nil
 	}
 
 	query := "SELECT SUM(value) AS volume FROM address_coin_balances"
 	row := s.db.QueryRowContext(ctx, query)
-	if row.Err() == pgx.ErrNoRows {
-		return "0", nil
-	} else if row.Err() != nil {
-		return "0", row.Err()
+	if row.Err() != nil {
+		if errors.Is(row.Err(), pgx.ErrNoRows) {
+			return "0", nil
+		}
+		return "0", errors.Wrap(row.Err(), "failed to get volume price")
 	}
+
 	var res string
 	if err := row.Scan(&res); err != nil {
 		return "0", err
