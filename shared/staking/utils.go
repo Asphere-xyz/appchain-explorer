@@ -1,7 +1,7 @@
 package staking
 
 import (
-	"github.com/Ankr-network/ankr-protocol/shared/types"
+	"github.com/Ankr-network/appchain-explorer/shared/types"
 	"github.com/sirupsen/logrus"
 	"log"
 )

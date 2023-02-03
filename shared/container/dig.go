@@ -1,11 +1,11 @@
 package container
 
 import (
-	"github.com/Ankr-network/ankr-protocol/shared/common"
-	"github.com/Ankr-network/ankr-protocol/shared/database"
-	"github.com/Ankr-network/ankr-protocol/shared/gateway"
-	"github.com/Ankr-network/ankr-protocol/shared/staking"
-	"github.com/Ankr-network/ankr-protocol/shared/websocket"
+	"github.com/Ankr-network/appchain-explorer/shared/common"
+	"github.com/Ankr-network/appchain-explorer/shared/database"
+	"github.com/Ankr-network/appchain-explorer/shared/gateway"
+	"github.com/Ankr-network/appchain-explorer/shared/staking"
+	"github.com/Ankr-network/appchain-explorer/shared/websocket"
 	log "github.com/sirupsen/logrus"
 	"go.uber.org/dig"
 )

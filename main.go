@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/Ankr-network/ankr-protocol/shared/container"
+	"github.com/Ankr-network/appchain-explorer/shared/container"
 	"time"
 )
 

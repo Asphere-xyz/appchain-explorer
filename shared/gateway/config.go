@@ -1,7 +1,7 @@
 package gateway
 
 import (
-	"github.com/Ankr-network/ankr-protocol/shared/common"
+	"github.com/Ankr-network/appchain-explorer/shared/common"
 	"github.com/spf13/viper"
 )
 

@@ -3,7 +3,7 @@ package common
 import (
 	"bytes"
 	"encoding/gob"
-	"github.com/Ankr-network/ankr-protocol/shared"
+	"github.com/Ankr-network/appchain-explorer/shared"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 	"os"

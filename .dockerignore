@@ -1,0 +1,13 @@
+./web
+./genesis
+./charts
+./docker-compose.yaml
+./Makefile
+./README.md
+./schema.bash
+./gen
+./idea
+./.git
+./.gitmodules
+./.gitignore
+./gateway.swagger.json

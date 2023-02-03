@@ -4,7 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/Ankr-network/ankr-protocol/shared/types"
+	"github.com/Ankr-network/appchain-explorer/shared/types"
 	"github.com/gorilla/websocket"
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"

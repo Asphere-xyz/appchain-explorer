@@ -1,4 +1,4 @@
-module github.com/Ankr-network/ankr-protocol
+module github.com/Ankr-network/appchain-explorer
 
 go 1.18
 

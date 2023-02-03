@@ -2,7 +2,7 @@ package gateway
 
 import (
 	"context"
-	"github.com/Ankr-network/ankr-protocol/shared/types"
+	"github.com/Ankr-network/appchain-explorer/shared/types"
 	"github.com/ethereum/go-ethereum/common"
 	"time"
 )

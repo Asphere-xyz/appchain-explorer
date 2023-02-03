@@ -2,8 +2,8 @@ package websocket
 
 import (
 	"encoding/json"
-	"github.com/Ankr-network/ankr-protocol/shared"
-	"github.com/Ankr-network/ankr-protocol/shared/database"
+	"github.com/Ankr-network/appchain-explorer/shared"
+	"github.com/Ankr-network/appchain-explorer/shared/database"
 	"github.com/gorilla/websocket"
 	log "github.com/sirupsen/logrus"
 	"net/http"

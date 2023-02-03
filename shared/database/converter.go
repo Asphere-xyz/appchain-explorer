@@ -3,8 +3,8 @@ package database
 import (
 	"bytes"
 	"fmt"
-	"github.com/Ankr-network/ankr-protocol/shared/entity"
-	"github.com/Ankr-network/ankr-protocol/shared/types"
+	"github.com/Ankr-network/appchain-explorer/shared/entity"
+	"github.com/Ankr-network/appchain-explorer/shared/types"
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	log "github.com/sirupsen/logrus"
 	"strconv"
