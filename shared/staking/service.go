@@ -537,11 +537,11 @@ func (s *Service) updateAPY() error {
 		log.WithError(err).Error("failed to set last apy epoch")
 	}
 
-	if result.Cmp(new(big.Float).SetFloat64(minApr)) < 0 {
-		return nil
-	}
-
 	if result.Cmp(new(big.Float)) > 0 {
+		if result.Cmp(new(big.Float).SetFloat64(minApr)) < 0 {
+			result.SetUint64(0)
+		}
+
 		s.aprMux.Lock()
 		s.apr.Set(result)
 		s.aprMux.Unlock()
