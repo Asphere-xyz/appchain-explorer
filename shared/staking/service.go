@@ -560,39 +560,39 @@ func (s *Service) updateStats() (err error) {
 	ctx := context.Background()
 	stats := types.StakingStats{}
 	if stats.ActiveUsers_7D, err = s.databaseService.EstimateActiveUsers(ctx, 7*time.Hour*24); err != nil {
-		return errors.Wrap(err, "failed to estimate active users")
+		log.WithError(err).Error("failed to estimate active users")
 	}
 	if stats.TotalHolders, err = s.databaseService.EstimateTokenHolders(ctx); err != nil {
-		return errors.Wrap(err, "failed to estimate token holdres")
+		log.WithError(err).Error("failed to estimate token holdres")
 	}
 	if stats.TotalIssuance, err = s.databaseService.GetTotalIssuance(ctx); err != nil {
-		return errors.Wrap(err, "failed to get total issuance")
+		log.WithError(err).Error("failed to get total issuance")
 	}
 	if stats.TotalValidators, err = s.state.GetTotalValidators(ctx); err != nil {
-		return errors.Wrap(err, "failed to get total validators")
+		log.WithError(err).Error("failed to get total validators")
 	}
 	if stats.TotalDelegators, err = s.state.GetTotalDelegators(ctx); err != nil {
-		return errors.Wrap(err, "failed to get total delegators")
+		log.WithError(err).Error("failed to get total delegators")
 	}
 	stats.ChainId = s.GetChainID().Uint64()
 	stats.Apy = s.GetApr().String()
 	if stats.TotalTxs, err = s.databaseService.EstimateTransactionCount(ctx); err != nil {
-		return errors.Wrap(err, "failed to estimate tx count")
+		log.WithError(err).Error("failed to estimate tx count")
 	}
 	if stats.TotalTransfers, err = s.databaseService.EstimateTransfersCount(ctx); err != nil {
-		return errors.Wrap(err, "failed to estimate transfers count")
+		log.WithError(err).Error("failed to estimate transfers count")
 	}
 	if stats.TotalStaked, err = s.GetTotalStaked(ctx); err != nil {
-		return errors.Wrap(err, "failed to get total staked")
+		log.WithError(err).Error("failed to get total staked")
 	}
 	if stats.TransferVolume_24H, err = s.databaseService.GetTransferVolume(ctx, time.Hour*24); err != nil {
-		return errors.Wrap(err, "failed to get transfer volume")
+		log.WithError(err).Error("failed to get transfer volume")
 	}
 	if stats.MarketCap, err = s.databaseService.GetMarketCap(ctx); err != nil {
-		return errors.Wrap(err, "failed to get total market cap")
+		log.WithError(err).Error("failed to get marketcap")
 	}
 	if stats.KnownBlock, s.stats.AffectedBlock, _, err = s.GetLatestBlock(ctx); err != nil {
-		return errors.Wrap(err, "failed to get latestBlock")
+		log.WithError(err).Error("failed to get latestBlock")
 	}
 
 	s.statsMux.Lock()
