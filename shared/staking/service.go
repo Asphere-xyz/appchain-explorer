@@ -145,7 +145,7 @@ func (s *Service) backgroundWorker() (err error) {
 	updateChainsTick := time.Tick(15 * time.Minute)
 	processEventLogsTick := time.Tick(10 * time.Second)
 	updateAprTick := time.Tick(24 * time.Hour)
-	updateStatsTick := time.Tick(time.Hour)
+	updateStatsTick := time.Tick(time.Minute * 10)
 	for {
 		var err error
 		select {
