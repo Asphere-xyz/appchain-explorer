@@ -41,3 +41,5 @@ http:
       get: /v1alpha/staking/stats
     - selector: com.ankr.StakingGateway.GetTotalTxsGraph
       get: /v1alpha/staking/graph/txs
+    - selector: com.ankr.StakingGateway.GetValidatorRewardsGraph
+      get: /v1alpha/staking/graph/rewards/{validator}
