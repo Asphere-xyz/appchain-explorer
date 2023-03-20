@@ -141,6 +141,7 @@ service StakingGateway {
   rpc GetDelegators(GetDelegatorsRequest) returns (GetDelegatorsReply);
   rpc GetStats(GetStatsRequest) returns (GetStatsReply);
   rpc GetTotalTxsGraph(GetTotalTxsGraphRequest) returns (GetTotalTxsGraphReply);
+  rpc GetValidatorRewardsGraph(GetValidatorRewardsGraphRequest) returns (GetValidatorRewardsGraphReply);
 }
 
 message GetValidatorsRequest {
@@ -222,4 +223,11 @@ message GetTotalTxsGraphRequest {
 }
 message GetTotalTxsGraphReply {
   map<uint64, uint64> graph = 1;
+}
+
+message GetValidatorRewardsGraphRequest {
+  string validator = 1;
+}
+message GetValidatorRewardsGraphReply {
+  map<uint64, string> graph = 1;
 }

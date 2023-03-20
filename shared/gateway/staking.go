@@ -2,8 +2,11 @@ package gateway
 
 import (
 	"context"
+	"fmt"
 	"github.com/Ankr-network/appchain-explorer/shared/types"
 	"github.com/ethereum/go-ethereum/common"
+	"log"
+	"strconv"
 	"time"
 )
 
@@ -129,4 +132,52 @@ func (s *Server) GetTotalTxsGraph(ctx context.Context, _ *types.GetTotalTxsGraph
 		res2[blockTime] = v
 	}
 	return &types.GetTotalTxsGraphReply{Graph: res2}, nil
+}
+
+func (s *Server) GetValidatorRewardsGraph(ctx context.Context, req *types.GetValidatorRewardsGraphRequest) (*types.GetValidatorRewardsGraphReply, error) {
+	chainConfig := s.stakingService.GetChainConfig()
+	latestKnownBlock, _, latestBlockTime, err := s.stakingService.GetLatestBlock(ctx)
+	if err != nil {
+		return nil, err
+	}
+	blocksMonthAgo := int64(latestKnownBlock) - 30*24*time.Hour.Milliseconds()/int64(chainConfig.AverageBlockTime)
+	if blocksMonthAgo < 0 {
+		blocksMonthAgo = int64(0)
+	}
+	validator := common.HexToAddress(req.Validator)
+	offset := int64(0)
+	size := int64(1000)
+	res2 := make(map[uint64]float64)
+	for {
+		res, err := s.stateDbService.GetValidatorDeposits(ctx, validator, offset, size)
+		if err != nil {
+			return nil, err
+		}
+		if len(res) == 0 {
+			break
+		}
+		offset += int64(len(res))
+		dayBlockInterval := uint64(24 * time.Hour.Milliseconds() / int64(chainConfig.AverageBlockTime))
+		for _, v := range res {
+			amount, err := strconv.ParseFloat(v.Amount, 64)
+			if err != nil {
+				log.Println(err)
+				continue
+			}
+			for i := uint64(0); i < uint64(30); i++ {
+				intervalEnd := uint64(latestKnownBlock) - i*dayBlockInterval
+				intervalStart := uint64(latestKnownBlock) - (i+1)*dayBlockInterval
+				if (v.BlockNumber >= intervalStart) && (v.BlockNumber < intervalEnd) {
+					res2[intervalEnd] += amount
+				}
+			}
+		}
+	}
+	zeroBlockTime := latestBlockTime - latestKnownBlock*uint64(chainConfig.AverageBlockTime/1000)
+	res3 := make(map[uint64]string)
+	for k, v := range res2 {
+		res3[zeroBlockTime+k*uint64(chainConfig.AverageBlockTime/1000)] = fmt.Sprintf("%f", v)
+	}
+
+	return &types.GetValidatorRewardsGraphReply{Graph: res3}, nil
 }
