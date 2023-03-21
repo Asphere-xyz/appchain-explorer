@@ -8,3 +8,4 @@ certs/prod/
 .vscode
 docker-compose.yaml
 web/node_modules
+vendor

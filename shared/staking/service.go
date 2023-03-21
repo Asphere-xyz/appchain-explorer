@@ -520,7 +520,17 @@ func (s *Service) updateAPY() error {
 			}
 
 			totalStaked := new(big.Float).SetInt(status.TotalDelegated)
+			if totalStaked.Cmp(new(big.Float)) == 0 {
+				log.Debugf("validator %s have zero staked amount on epoch %d", validator.Hex())
+				continue
+			}
+
 			apr := new(big.Float).SetInt(status.TotalRewards)
+			if apr.Cmp(new(big.Float)) == 0 {
+				log.Debugf("validator %s have zero rewards on epoch %d", validator.Hex(), epoch)
+				continue
+			}
+
 			// calculate apr with assumption that we pay +- eq reward
 			apr = apr.Quo(apr, totalStaked).Mul(apr, AnkrAprMultiplayer)
 			// choose max apr
