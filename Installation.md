@@ -38,9 +38,11 @@ mix do deps.get, local.rebar --force, deps.compile
 ```
 
 4. Generate a new secret_key_base for the DB by setting a corresponding ENV var:
-
+```
 export SECRET_KEY_BASE='New_Generated_key'
+```
 In order to generate a new secret_key_base run `mix phx.gen.secret`
+
 
 5. Create database and start service:
 ```
