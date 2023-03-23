@@ -83,6 +83,7 @@ message ValidatorEvent {
   }
   string transaction_hash = 1;
   uint64 block_number = 2;
+  uint64 time = 3;
 }
 
 message Delegator {
