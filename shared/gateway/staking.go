@@ -63,6 +63,16 @@ func (s *Server) GetValidatorEvents(ctx context.Context, req *types.GetValidator
 		return nil, err
 	}
 	newSize, hasMore := checkHasMore(req.Size_, len(result))
+	// fill approximate time based on block number
+	chainConfig := s.stakingService.GetChainConfig()
+	latestKnownBlock, _, latestBlockTime, err := s.stakingService.GetLatestBlock(ctx)
+	if err != nil {
+		return nil, err
+	}
+	zeroBlockTime := latestBlockTime - latestKnownBlock*uint64(chainConfig.AverageBlockTime/1000)
+	for i, e := range result {
+		e.Time = zeroBlockTime + uint64(uint32(i)*chainConfig.AverageBlockTime/1000)
+	}
 	return &types.GetValidatorEventsReply{ValidatorEvents: result[:newSize], HasMore: hasMore}, nil
 }
 
