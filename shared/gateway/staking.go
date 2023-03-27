@@ -70,8 +70,8 @@ func (s *Server) GetValidatorEvents(ctx context.Context, req *types.GetValidator
 		return nil, err
 	}
 	zeroBlockTime := latestBlockTime - latestKnownBlock*uint64(chainConfig.AverageBlockTime/1000)
-	for i, e := range result {
-		e.Time = zeroBlockTime + uint64(uint32(i)*chainConfig.AverageBlockTime/1000)
+	for _, e := range result {
+		e.Time = zeroBlockTime + e.BlockNumber*uint64(chainConfig.AverageBlockTime/1000)
 	}
 	return &types.GetValidatorEventsReply{ValidatorEvents: result[:newSize], HasMore: hasMore}, nil
 }
