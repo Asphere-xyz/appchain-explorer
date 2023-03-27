@@ -72,6 +72,18 @@ func (s *Server) GetValidatorEvents(ctx context.Context, req *types.GetValidator
 	zeroBlockTime := latestBlockTime - latestKnownBlock*uint64(chainConfig.AverageBlockTime/1000)
 	for _, e := range result {
 		e.Time = zeroBlockTime + e.BlockNumber*uint64(chainConfig.AverageBlockTime/1000)
+		switch e.Event.(type) {
+		case *types.ValidatorEvent_Delegated:
+			e.EventType = "delegated"
+		case *types.ValidatorEvent_Undelegated:
+			e.EventType = "undelegated"
+		case *types.ValidatorEvent_Claimed:
+			e.EventType = "claimed"
+		case *types.ValidatorEvent_Redelegated:
+			e.EventType = "redelegated"
+		default:
+			e.EventType = "unknown"
+		}
 	}
 	return &types.GetValidatorEventsReply{ValidatorEvents: result[:newSize], HasMore: hasMore}, nil
 }
