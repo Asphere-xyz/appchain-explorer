@@ -102,8 +102,19 @@ func (s *Server) GetDelegators(ctx context.Context, req *types.GetDelegatorsRequ
 	if err != nil {
 		return nil, err
 	}
-	newSize, hasMore := checkHasMore(req.Size_, len(result))
-	return &types.GetDelegatorsReply{Delegators: result[:newSize], HasMore: hasMore}, nil
+	var res2 []*types.Delegator
+	for _, d := range result {
+		amount, err := strconv.ParseInt(d.TotalDelegated, 10, 64)
+		if err != nil {
+			continue
+		}
+		if amount <= 0 {
+			continue
+		}
+		res2 = append(res2, d)
+	}
+	newSize, hasMore := checkHasMore(req.Size_, len(res2))
+	return &types.GetDelegatorsReply{Delegators: res2[:newSize], HasMore: hasMore}, nil
 }
 
 func (s *Server) GetChains(ctx context.Context, req *types.GetChainsRequest) (*types.GetChainsReply, error) {
