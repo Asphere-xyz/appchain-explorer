@@ -130,7 +130,7 @@ func handleCorsRequest(w http.ResponseWriter, r *http.Request) bool {
 	if origin = r.Header.Get("Origin"); origin == "" {
 		return false
 	}
-	w.Header().Set("Access-Control-Allow-Origin", origin)
+	w.Header().Set("Access-Control-Allow-Origin", "*")
 	w.Header().Set("Access-Control-Allow-Credentials", "true")
 	if r.Method != "OPTIONS" || r.Header.Get("Access-Control-Request-Method") == "" {
 		return false
